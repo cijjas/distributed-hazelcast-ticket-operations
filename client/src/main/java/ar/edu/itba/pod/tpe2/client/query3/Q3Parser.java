@@ -27,7 +27,7 @@ public class Q3Parser extends BaseParser {
             throw new ParseException("The value of Dn must be a valid integer: " + nValue);
         }
         BaseArguments baseArgs = super.getArguments();
-        arguments = new Q3Arguments(baseArgs.getAddresses(), baseArgs.getCity(), baseArgs.getInPath(), baseArgs.getOutPath(), n);
+        arguments = new Q3Arguments(baseArgs.getAddresses(), baseArgs.getCity(), baseArgs.getInPath(), baseArgs.getOutPath(), baseArgs.getClusterName(), baseArgs.getClusterPass(), n);
     }
 
 

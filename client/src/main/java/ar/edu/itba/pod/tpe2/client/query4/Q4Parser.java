@@ -28,7 +28,7 @@ public class Q4Parser extends BaseParser {
         LocalDate fromDate = validateAndParseDate(from, "Dfrom");
         LocalDate toDate = validateAndParseDate(to, "Dto");
 
-        arguments = new Q4Arguments(super.getArguments().getAddresses(), super.getArguments().getCity(), super.getArguments().getInPath(), super.getArguments().getOutPath(), fromDate, toDate);
+        arguments = new Q4Arguments(super.getArguments().getAddresses(), super.getArguments().getCity(), super.getArguments().getInPath(), super.getArguments().getOutPath(), super.getArguments().getClusterName(), super.getArguments().getClusterPass(), fromDate, toDate);
     }
 
     private LocalDate validateAndParseDate(String dateStr, String dateType) throws ParseException {

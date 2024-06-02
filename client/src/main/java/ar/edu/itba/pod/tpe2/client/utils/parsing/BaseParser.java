@@ -11,6 +11,8 @@ import java.nio.file.Paths;
 @Getter
 public abstract class BaseParser implements QueryParser {
     private BaseArguments arguments;
+    private static final String DEFAULT_CLUSTER_NAME = "g7";
+    private static final String DEFAULT_CLUSTER_PASS = "g7-pass";
 
     @Override
     public Options getOptions() {
@@ -19,6 +21,9 @@ public abstract class BaseParser implements QueryParser {
         options.addRequiredOption("DinPath", "DinPath",true, "Input file path");
         options.addRequiredOption("DoutPath","DoutPath", true, "Output file path");
         options.addRequiredOption("Dcity","Dcity", true, "City to process");
+        options.addOption("DclusterName","DclusterName", true, "Cluster name");
+        options.addOption("DclusterPass","DclusterPass", true, "Cluster password");
+
         addCustomOptions(options);
 
         return options;
@@ -31,6 +36,8 @@ public abstract class BaseParser implements QueryParser {
         String city = cmd.getOptionValue("Dcity");
         String inPathStr = cmd.getOptionValue("DinPath");
         String outPathStr = cmd.getOptionValue("DoutPath");
+        String clusterName = cmd.getOptionValue("DclusterName", DEFAULT_CLUSTER_NAME);
+        String clusterPass = cmd.getOptionValue("DclusterPass", DEFAULT_CLUSTER_PASS);
 
 
         validateAddresses(addresses);
@@ -40,7 +47,7 @@ public abstract class BaseParser implements QueryParser {
         Path outPath = validateAndConvertPath(outPathStr, "Output");
 
 
-        arguments = new BaseArguments(addresses, city, inPath, outPath);
+        arguments = new BaseArguments(addresses, city, inPath, outPath, clusterName, clusterPass);
         parseCustomArguments(cmd);
     }
 
@@ -90,7 +97,7 @@ public abstract class BaseParser implements QueryParser {
         CommandLineParser cliParser = new DefaultParser();
         CommandLine cmd = cliParser.parse(options, args);
         parse(cmd);
-        return new BaseArguments(arguments.getAddresses(), arguments.getCity(), arguments.getInPath(), arguments.getOutPath());
+        return arguments;
     }
 
 }

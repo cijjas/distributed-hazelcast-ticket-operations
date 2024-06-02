@@ -11,8 +11,8 @@ public class Q4Arguments extends BaseArguments {
     private final LocalDate from;
     private final LocalDate to;
 
-    public Q4Arguments(String addresses, String city, Path inPath, Path outPath, LocalDate from, LocalDate to) {
-        super(addresses, city, inPath, outPath);
+    public Q4Arguments(String addresses, String city, Path inPath, Path outPath, String clusterName, String clusterPass, LocalDate from, LocalDate to) {
+        super(addresses, city, inPath, outPath, clusterName, clusterPass);
         this.from = from;
         this.to = to;
     }

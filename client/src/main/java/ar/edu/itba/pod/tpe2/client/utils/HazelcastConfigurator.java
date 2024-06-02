@@ -8,14 +8,20 @@ import com.hazelcast.config.GroupConfig;
 import com.hazelcast.core.HazelcastInstance;
 
 public class HazelcastConfigurator {
+    private static final String DEFAULT_CLUSTER_NAME = "g7";
+    private static final String DEFAULT_CLUSTER_PASS = "g7-pass";
 
     public static HazelcastInstance configureHazelcastClient(BaseArguments arguments) {
         ClientConfig clientConfig = new ClientConfig();
 
-        GroupConfig groupConfig = new GroupConfig().setName("g0").setPassword("g0-pass");
+        GroupConfig groupConfig = new GroupConfig()
+                .setName(arguments.getClusterName())
+                .setPassword(arguments.getClusterPass());
+
         clientConfig.setGroupConfig(groupConfig);
 
         ClientNetworkConfig clientNetworkConfig = new ClientNetworkConfig();
+
         clientNetworkConfig.addAddress(arguments.getAddresses().split(";"));
 
         clientConfig.setNetworkConfig(clientNetworkConfig);

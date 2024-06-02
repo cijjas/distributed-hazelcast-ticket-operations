@@ -12,6 +12,8 @@ public class BaseArguments {
     private final String city;
     private final Path inPath;
     private final Path outPath;
+    private final String clusterName;
+    private final String clusterPass;
 }
 
 

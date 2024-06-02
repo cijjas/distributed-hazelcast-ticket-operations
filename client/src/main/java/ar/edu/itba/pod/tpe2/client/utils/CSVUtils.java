@@ -28,7 +28,7 @@ public class CSVUtils {
         }
     }
 
-    public static List<Ticket> parseTicketsNYC(Path path) throws IOException {
+    public static List<Ticket> parseTickets(Path path) throws IOException {
         try (Stream<String> lines = Files.lines(path)) {
             return lines.skip(1)
                     .map(line -> {
@@ -36,7 +36,7 @@ public class CSVUtils {
                         return new Ticket(
                                 parts[0],
                                 LocalDate.parse(parts[1], DateTimeFormatter.ofPattern("yyyy-MM-dd")),
-                                Integer.parseInt(parts[2]),
+                                parts[2],
                                 Double.parseDouble(parts[3]),
                                 parts[4],
                                 parts[5]
