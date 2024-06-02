@@ -1,8 +1,9 @@
 package ar.edu.itba.pod.tpe2.client.query4;
 
-import ar.edu.itba.pod.tpe2.client.utils.BaseArguments;
+import ar.edu.itba.pod.tpe2.client.utils.parsing.BaseArguments;
 import lombok.Getter;
 
+import java.nio.file.Path;
 import java.time.LocalDate;
 
 @Getter
@@ -10,7 +11,7 @@ public class Q4Arguments extends BaseArguments {
     private final LocalDate from;
     private final LocalDate to;
 
-    public Q4Arguments(String addresses, String city, String inPath, String outPath, LocalDate from, LocalDate to) {
+    public Q4Arguments(String addresses, String city, Path inPath, Path outPath, LocalDate from, LocalDate to) {
         super(addresses, city, inPath, outPath);
         this.from = from;
         this.to = to;

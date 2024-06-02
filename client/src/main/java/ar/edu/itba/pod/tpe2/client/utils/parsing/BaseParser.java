@@ -1,10 +1,12 @@
-package ar.edu.itba.pod.tpe2.client.utils;
+package ar.edu.itba.pod.tpe2.client.utils.parsing;
 
 
 import lombok.Getter;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.*;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Getter
 public abstract class BaseParser implements QueryParser {
@@ -27,14 +29,15 @@ public abstract class BaseParser implements QueryParser {
     public void parse(CommandLine cmd) throws ParseException {
         String addresses = cmd.getOptionValue("Daddresses");
         String city = cmd.getOptionValue("Dcity");
-        String inPath = cmd.getOptionValue("DinPath");
-        String outPath = cmd.getOptionValue("DoutPath");
+        String inPathStr = cmd.getOptionValue("DinPath");
+        String outPathStr = cmd.getOptionValue("DoutPath");
 
 
         validateAddresses(addresses);
         validateCity(city);
-        validatePath(inPath, "Input");
-        validatePath(outPath, "Output");
+
+        Path inPath = validateAndConvertPath(inPathStr, "Input");
+        Path outPath = validateAndConvertPath(outPathStr, "Output");
 
 
         arguments = new BaseArguments(addresses, city, inPath, outPath);
@@ -65,16 +68,29 @@ public abstract class BaseParser implements QueryParser {
         }
     }
 
-    private void validatePath(String path, String pathType) throws ParseException {
-        if (path == null || path.isEmpty()) {
+    private Path validateAndConvertPath(String pathStr, String pathType) throws ParseException {
+        if (pathStr == null || pathStr.isEmpty()) {
             throw new ParseException(pathType + " path must not be empty");
         }
+
+        Path path = Paths.get(pathStr);
+        if (!Files.exists(path)) {
+            throw new ParseException(pathType + " directory path does not exist: " + pathStr);
+        }
+        if (!Files.isDirectory(path)) {
+            throw new ParseException(pathType + " path is not a directory: " + pathStr);
+        }
+        return path;
     }
 
 
     @Override
-    public BaseArguments getArguments() {
-        return arguments;
+    public BaseArguments getArguments(String[] args) throws ParseException{
+        Options options = this.getOptions();
+        CommandLineParser cliParser = new DefaultParser();
+        CommandLine cmd = cliParser.parse(options, args);
+        parse(cmd);
+        return new BaseArguments(arguments.getAddresses(), arguments.getCity(), arguments.getInPath(), arguments.getOutPath());
     }
 
 }

@@ -1,4 +1,4 @@
-package ar.edu.itba.pod.tpe2.client.utils;
+package ar.edu.itba.pod.tpe2.client.utils.parsing;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;

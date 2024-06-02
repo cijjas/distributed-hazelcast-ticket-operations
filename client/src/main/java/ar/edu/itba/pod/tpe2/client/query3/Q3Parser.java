@@ -1,13 +1,14 @@
 package ar.edu.itba.pod.tpe2.client.query3;
 
 
-import ar.edu.itba.pod.tpe2.client.utils.BaseArguments;
-import ar.edu.itba.pod.tpe2.client.utils.BaseParser;
-import ar.edu.itba.pod.tpe2.client.utils.QueryParser;
+import ar.edu.itba.pod.tpe2.client.utils.parsing.BaseArguments;
+import ar.edu.itba.pod.tpe2.client.utils.parsing.BaseParser;
+import lombok.Getter;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+@Getter
 public class Q3Parser extends BaseParser {
     private Q3Arguments arguments;
 
@@ -30,8 +31,4 @@ public class Q3Parser extends BaseParser {
     }
 
 
-    @Override
-    public Q3Arguments getArguments() {
-        return arguments;
-    }
 }

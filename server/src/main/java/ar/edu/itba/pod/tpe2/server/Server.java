@@ -1,6 +1,9 @@
 package ar.edu.itba.pod.tpe2.server;
 
+import ar.edu.itba.pod.tpe2.server.utils.parsing.ServerArguments;
+import ar.edu.itba.pod.tpe2.server.utils.parsing.ServerParser;
 import com.hazelcast.config.*;
+import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Collections;
@@ -15,13 +18,30 @@ public class Server {
     public static void main(String[] args) {
         logger.info("hz-config Server Starting ...");
 
-        // Config
-        Config config = new Config();
+        ServerParser parser = new ServerParser();
+        ServerArguments arguments;
 
+        try{
+             arguments = parser.getArguments(args);
+        } catch (ParseException e) {
+            System.out.println(e.getMessage());
+            return;
+        }
+
+        // Config
+        Config config = getHazelcastConfig(arguments);
+
+        // Start cluster
+        Hazelcast.newHazelcastInstance(config);
+    }
+
+
+    private static Config getHazelcastConfig(ServerArguments arguments) {
         // Group Config
+        Config config = new Config();
         GroupConfig groupConfig = new GroupConfig()
-                .setName("g0")
-                .setPassword("g0-pass");
+                .setName(arguments.getClusterName())
+                .setPassword(arguments.getClusterPassword());
 
         config.setGroupConfig(groupConfig);
 
@@ -31,7 +51,7 @@ public class Server {
         JoinConfig joinConfig = new JoinConfig().setMulticastConfig(multicastConfig);
 
         InterfacesConfig interfacesConfig = new InterfacesConfig()
-                .setInterfaces(Collections.singletonList("192.168.0.*"))
+                .setInterfaces(arguments.getInterfaces())
                 .setEnabled(true);
 
         NetworkConfig networkConfig = new NetworkConfig()
@@ -45,9 +65,7 @@ public class Server {
 //                .setUrl("http://localhost:8080/mancenter/")
 //                .setEnabled(true);
 //        config.setManagementCenterConfig(managementCenterConfig);
-
-        // Start cluster
-        Hazelcast.newHazelcastInstance(config);
+        return config;
     }
 
 }

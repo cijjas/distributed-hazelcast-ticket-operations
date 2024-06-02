@@ -1,7 +1,7 @@
 package ar.edu.itba.pod.tpe2.client.query4;
 
-import ar.edu.itba.pod.tpe2.client.utils.BaseParser;
-import ar.edu.itba.pod.tpe2.client.utils.QueryParser;
+import ar.edu.itba.pod.tpe2.client.utils.parsing.BaseParser;
+import lombok.Getter;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -10,9 +10,9 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
+@Getter
 public class Q4Parser extends BaseParser {
     private Q4Arguments arguments;
-
 
     @Override
     protected void addCustomOptions(Options options) {
@@ -30,6 +30,7 @@ public class Q4Parser extends BaseParser {
 
         arguments = new Q4Arguments(super.getArguments().getAddresses(), super.getArguments().getCity(), super.getArguments().getInPath(), super.getArguments().getOutPath(), fromDate, toDate);
     }
+
     private LocalDate validateAndParseDate(String dateStr, String dateType) throws ParseException {
         if (dateStr == null || dateStr.isEmpty()) {
             throw new ParseException(dateType + " must not be empty");
@@ -45,10 +46,5 @@ public class Q4Parser extends BaseParser {
             throw new ParseException("Invalid date for " + dateType + ". Expected format is DD/MM/YY");
         }
     }
-    @Override
-    public Q4Arguments getArguments() {
-        return arguments;
-    }
-
 
 }
