@@ -17,9 +17,7 @@ public class Q1CombinerFactory implements CombinerFactory<String, Integer, Integ
 
             @Override
             public Integer finalizeChunk() {
-                int result = sum;
-                sum = 0;
-                return result;
+                return sum;
             }
 
             @Override

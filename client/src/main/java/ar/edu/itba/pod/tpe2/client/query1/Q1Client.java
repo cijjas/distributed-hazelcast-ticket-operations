@@ -28,19 +28,19 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-import static ar.edu.itba.pod.tpe2.client.utils.CSVUtils.parseInfractions;
-import static ar.edu.itba.pod.tpe2.client.utils.CSVUtils.parseTickets;
+import static ar.edu.itba.pod.tpe2.client.utils.CSVUtils.*;
 
 public class Q1Client {
 
     private static final Logger logger = LoggerFactory.getLogger(Q1Client.class);
 
+    private static final String QUERY_NAME = "query1";
+    private static final String QUERY_RESULT_HEADER = "Infraction;Tickets";
+    private static final String CNP = "g7-"; // Cluster Name Prefix
+
     public static void main(String[] args) {
-        logger.info("hz-config Client Starting ...");
 
-        QueryParser parser = QueryParserFactory.getParser("q1");
-
-
+        QueryParser parser = QueryParserFactory.getParser(QUERY_NAME);
 
         BaseArguments arguments;
         try{
@@ -67,32 +67,32 @@ public class Q1Client {
                     .filter(ticket -> infractions.containsKey(ticket.getInfractionCode()))
                     .toList(); // list de multas que tienen infracciones del archivo de infracciones
 
-
+            System.out.println("Infractions: " + infractions);
             logger.info("Finished reading and storing CSV files");
 
-            IList<Ticket> ticketList = hazelcastInstance.getList("g7-ticketList");
+            IList<Ticket> ticketList = hazelcastInstance.getList(CNP +"ticketList");
             ticketList.addAll(tickets);
 
-            JobTracker jobTracker = hazelcastInstance.getJobTracker("g7-jobTracker");
+            JobTracker jobTracker = hazelcastInstance.getJobTracker(CNP + "jobTracker");
             KeyValueSource<String, Ticket> source = KeyValueSource.fromList(ticketList);
 
             Job<String, Ticket> job = jobTracker.newJob(source);
-            Map<String, Integer> result = job.mapper(new Q1Mapper())
+            Map<String, Integer> result = job
+                    .mapper(new Q1Mapper())
                     .combiner(new Q1CombinerFactory())
                     .reducer(new Q1ReducerFactory())
                     .submit(new Q1Collator())
                     .get();
 
-            // Procesar los resultados y guardarlos en un archivo de salida
             List<String> output = result.entrySet()
                     .stream()
                     .sorted(Map.Entry.<String, Integer>comparingByValue().reversed()
-                            .thenComparing(Map.Entry::getKey))
-                    .map(entry -> entry.getKey() + ";" + entry.getValue())
-                    .collect(Collectors.toList());
+                            .thenComparing(entry -> infractions.get(entry.getKey()).getDescription()))
+                    .map(entry -> infractions.get(entry.getKey()).getDescription() + ";" + entry.getValue())
+                    .toList();
 
-            Files.write(Paths.get(String.valueOf(arguments.getOutPath()), "query1.csv"), output, StandardCharsets.UTF_8);
 
+            writeQueryResults(arguments.getOutPath(), QUERY_NAME, QUERY_RESULT_HEADER, output);
 
         } catch (IOException  e) {
             logger.error("Error processing MapReduce job", e);
