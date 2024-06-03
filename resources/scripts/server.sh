@@ -10,4 +10,4 @@ fi
 
 JAVA_OPTS="--add-opens java.management/sun.management=ALL-UNNAMED --add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED "
 
-java -cp "$SERVER_JARS" -Xmx2048m  "$TARGET_SERVER"  "$@"
+java -cp "$SERVER_JARS" -Xmx8192m  "$TARGET_SERVER"  "$@"

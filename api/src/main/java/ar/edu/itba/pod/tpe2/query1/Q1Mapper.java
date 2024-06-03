@@ -7,16 +7,11 @@ import com.hazelcast.mapreduce.Mapper;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Q1Mapper implements Mapper<String, Ticket, String, Long> {
-
-    private final transient Set<Ticket> uniqueTickets =  new HashSet<>();
+public class Q1Mapper implements Mapper<String, Ticket, String, Integer> {
 
 
     @Override
-    public void map(String key, Ticket ticket, Context<String, Long> context) {
-        if (uniqueTickets.add(ticket)) {
-            context.emit(ticket.getInfractionCode(), 1L);
-        }
+    public void map(String integer, Ticket ticket, Context<String, Integer> context) {
+        context.emit(ticket.getInfractionCode(), 1);
     }
-
 }
