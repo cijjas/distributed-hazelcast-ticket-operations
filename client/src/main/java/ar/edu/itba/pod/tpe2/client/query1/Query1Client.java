@@ -1,38 +1,36 @@
 package ar.edu.itba.pod.tpe2.client.query1;
 
+import ar.edu.itba.pod.tpe2.client.utils.QueryConfig;
 import ar.edu.itba.pod.tpe2.client.utils.parsing.BaseArguments;
-import ar.edu.itba.pod.tpe2.client.utils.HazelcastConfigurator;
+import ar.edu.itba.pod.tpe2.client.utils.HazelcastConfig;
 import ar.edu.itba.pod.tpe2.client.utils.parsing.QueryParser;
 import ar.edu.itba.pod.tpe2.client.utils.parsing.QueryParserFactory;
-import ar.edu.itba.pod.tpe2.models.Infraction;
-import ar.edu.itba.pod.tpe2.models.Ticket;
-import ar.edu.itba.pod.tpe2.query1.Q1Collator;
-import ar.edu.itba.pod.tpe2.query1.Q1CombinerFactory;
-import ar.edu.itba.pod.tpe2.query1.Q1Mapper;
-import ar.edu.itba.pod.tpe2.query1.Q1ReducerFactory;
+import ar.edu.itba.pod.tpe2.client.utils.timelogging.TimestampLogger;
+import ar.edu.itba.pod.tpe2.models.infraction.Infraction;
+import ar.edu.itba.pod.tpe2.models.ticket.Ticket;
+import ar.edu.itba.pod.tpe2.query1.Query1Collator;
+import ar.edu.itba.pod.tpe2.query1.Query1CombinerFactory;
+import ar.edu.itba.pod.tpe2.query1.Query1Mapper;
+import ar.edu.itba.pod.tpe2.query1.Query1ReducerFactory;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.core.*;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 import static ar.edu.itba.pod.tpe2.client.utils.CSVUtils.*;
 
-public class Q1Client {
+@Slf4j
+public class Query1Client {
 
-    private static final Logger logger = LoggerFactory.getLogger(Q1Client.class);
 
     private static final String QUERY_NAME = "query1";
     private static final String QUERY_RESULT_HEADER = "Infraction;Tickets";
@@ -49,49 +47,53 @@ public class Q1Client {
             System.out.println(e.getMessage());
             return;
         }
+        QueryConfig queryConfig = new QueryConfig(QUERY_NAME + ".csv", "time1.txt");
 
         // Hazelcast client Config
-        HazelcastInstance hazelcastInstance = HazelcastConfigurator.configureHazelcastClient(arguments);
+        HazelcastInstance hazelcastInstance = HazelcastConfig.configureHazelcastClient(arguments);
 
+        TimestampLogger timeLog = new TimestampLogger(arguments.getOutPath(), queryConfig.getTimeOutputFile());
 
         try {
-            logger.info("Start reading and storing CSV files");
 
             String city = arguments.getCity();
 
-            Map<String, Infraction> infractions = parseInfractions(arguments.getInPath(), city)
-                    .stream()
-                    .collect(Collectors.toMap(Infraction::getCode, infraction -> infraction));
-            List<Ticket> tickets = parseTickets(arguments.getInPath(), city)
-                    .stream()
-                    .filter(ticket -> infractions.containsKey(ticket.getInfractionCode()))
-                    .toList();
+            // Load infractions from CSV
+            timeLog.logStartReading();
 
-            logger.info("Finished reading and storing CSV files");
+            Map<String, Infraction> infractions = new HashMap<>();
+            parseInfractions(arguments.getInPath(), city, infractions);
 
+            // Load tickets from CSV
             IList<Ticket> ticketList = hazelcastInstance.getList(CNP + "ticketList");
-            ticketList.addAll(tickets);
+            parseTickets(arguments.getInPath(), city, ticketList, infractions);
 
-            JobTracker jobTracker = hazelcastInstance.getJobTracker(CNP + "jobQ1Tracker");
+            timeLog.logEndReading();
+
+            JobTracker jobTracker = hazelcastInstance.getJobTracker(CNP + QUERY_NAME +"jobTracker");
             KeyValueSource<String, Ticket> source = KeyValueSource.fromList(ticketList);
 
             Job<String, Ticket> job = jobTracker.newJob(source);
+            timeLog.logStartMapReduce();
             Map<String, Integer> result = job
-                    .mapper(new Q1Mapper())
-                    .combiner(new Q1CombinerFactory())
-                    .reducer(new Q1ReducerFactory())
-                    .submit(new Q1Collator(infractions))
+                    .mapper(new Query1Mapper())
+                    .combiner(new Query1CombinerFactory())
+                    .reducer(new Query1ReducerFactory())
+                    .submit(new Query1Collator(infractions)) // TODO MIRAR infractions
                     .get();
+            timeLog.logEndMapReduce();
 
-            List<String> output = result.entrySet()
+            List<String> outputLines = result
+                    .entrySet()
                     .stream()
                     .map(entry -> infractions.get(entry.getKey()).getDescription() + ";" + entry.getValue())
                     .toList();
 
-            writeQueryResults(arguments.getOutPath(), QUERY_NAME, QUERY_RESULT_HEADER, output);
+            writeQueryResults(arguments.getOutPath(), queryConfig.getQueryOutputFile(), QUERY_RESULT_HEADER, outputLines);
+            timeLog.writeTimestamps();
 
         } catch (IOException  e) {
-            logger.error("Error processing MapReduce job", e);
+            System.out.println("Error reading CSV files or processing MapReduce job");
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
         } finally {

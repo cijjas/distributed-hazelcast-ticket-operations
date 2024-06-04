@@ -1,0 +1,4 @@
+04/06/2024 19:03:46:9587 INFO [main] ar.edu.itba.pod.tpe2.client.query1.Query1Client (main:62) - Inicio de la lectura del archivo
+04/06/2024 19:03:49:2410 INFO [main] ar.edu.itba.pod.tpe2.client.query1.Query1Client (main:71) - Fin de lectura del archivo
+04/06/2024 19:03:49:2587 INFO [main] ar.edu.itba.pod.tpe2.client.query1.Query1Client (main:77) - Inicio del trabajo map/reduce
+04/06/2024 19:03:49:6645 INFO [main] ar.edu.itba.pod.tpe2.client.query1.Query1Client (main:84) - Fin del trabajo map/reduce

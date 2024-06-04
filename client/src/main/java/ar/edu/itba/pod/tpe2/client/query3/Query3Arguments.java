@@ -6,10 +6,10 @@ import lombok.Getter;
 import java.nio.file.Path;
 
 @Getter
-public class Q3Arguments extends BaseArguments {
+public class Query3Arguments extends BaseArguments {
     private final int n;
 
-    public Q3Arguments(String addresses, String city, Path inPath, Path outPath,String clusterName, String clusterPass, int n) {
+    public Query3Arguments(String addresses, String city, Path inPath, Path outPath, String clusterName, String clusterPass, int n) {
         super(addresses, city, inPath, outPath, clusterName, clusterPass);
         this.n = n;
     }

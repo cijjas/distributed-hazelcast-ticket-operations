@@ -6,7 +6,7 @@ import com.hazelcast.mapreduce.ReducerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Q2ReducerFactory implements ReducerFactory<String, Map<String, Integer>, Map<String, Integer>> {
+public class Query2ReducerFactory implements ReducerFactory<String, Map<String, Integer>, Map<String, Integer>> {
 
     @Override
     public Reducer< Map<String, Integer>, Map<String, Integer>> newReducer(String s) {

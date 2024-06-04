@@ -1,4 +1,7 @@
-package ar.edu.itba.pod.tpe2.models;
+package ar.edu.itba.pod.tpe2.models.ticket;
+
+import ar.edu.itba.pod.tpe2.models.ticket.adapters.TicketCHIAdapter;
+import ar.edu.itba.pod.tpe2.models.ticket.adapters.TicketNYCAdapter;
 
 public class TicketAdapterFactory {
     public static Ticket createAdapter(String city, String[] fields) {

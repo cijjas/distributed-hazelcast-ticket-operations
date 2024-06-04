@@ -1,10 +1,10 @@
 package ar.edu.itba.pod.tpe2.query2;
 
-import ar.edu.itba.pod.tpe2.models.Ticket;
+import ar.edu.itba.pod.tpe2.models.ticket.Ticket;
 import com.hazelcast.mapreduce.Context;
 import com.hazelcast.mapreduce.Mapper;
 
-public class Q2Mapper implements Mapper<String, Ticket, String, String> {
+public class Query2Mapper implements Mapper<String, Ticket, String, String> {
 
 
     @Override

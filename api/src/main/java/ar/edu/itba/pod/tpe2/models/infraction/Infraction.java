@@ -1,10 +1,8 @@
-package ar.edu.itba.pod.tpe2.models;
+package ar.edu.itba.pod.tpe2.models.infraction;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.time.LocalDate;
 
 @Getter
 @Setter

@@ -9,8 +9,8 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 @Getter
-public class Q3Parser extends BaseParser {
-    private Q3Arguments arguments;
+public class Query3Parser extends BaseParser {
+    private Query3Arguments arguments;
 
     @Override
     protected void addCustomOptions(Options options) {
@@ -27,7 +27,7 @@ public class Q3Parser extends BaseParser {
             throw new ParseException("The value of Dn must be a valid integer: " + nValue);
         }
         BaseArguments baseArgs = super.getArguments();
-        arguments = new Q3Arguments(baseArgs.getAddresses(), baseArgs.getCity(), baseArgs.getInPath(), baseArgs.getOutPath(), baseArgs.getClusterName(), baseArgs.getClusterPass(), n);
+        arguments = new Query3Arguments(baseArgs.getAddresses(), baseArgs.getCity(), baseArgs.getInPath(), baseArgs.getOutPath(), baseArgs.getClusterName(), baseArgs.getClusterPass(), n);
     }
 
 

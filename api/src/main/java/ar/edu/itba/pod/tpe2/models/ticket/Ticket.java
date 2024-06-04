@@ -1,9 +1,7 @@
-package ar.edu.itba.pod.tpe2.models;
+package ar.edu.itba.pod.tpe2.models.ticket;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 public interface Ticket extends Serializable {
     String getPlate();

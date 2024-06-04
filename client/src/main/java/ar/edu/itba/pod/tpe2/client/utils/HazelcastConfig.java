@@ -7,7 +7,7 @@ import com.hazelcast.client.config.ClientNetworkConfig;
 import com.hazelcast.config.GroupConfig;
 import com.hazelcast.core.HazelcastInstance;
 
-public class HazelcastConfigurator {
+public class HazelcastConfig {
 
     public static HazelcastInstance configureHazelcastClient(BaseArguments arguments) {
         ClientConfig clientConfig = new ClientConfig();

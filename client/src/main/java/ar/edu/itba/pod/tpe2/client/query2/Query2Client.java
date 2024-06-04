@@ -1,12 +1,12 @@
 package ar.edu.itba.pod.tpe2.client.query2;
 
-import ar.edu.itba.pod.tpe2.client.query1.Q1Client;
-import ar.edu.itba.pod.tpe2.client.utils.HazelcastConfigurator;
+import ar.edu.itba.pod.tpe2.client.query1.Query1Client;
+import ar.edu.itba.pod.tpe2.client.utils.HazelcastConfig;
 import ar.edu.itba.pod.tpe2.client.utils.parsing.BaseArguments;
 import ar.edu.itba.pod.tpe2.client.utils.parsing.QueryParser;
 import ar.edu.itba.pod.tpe2.client.utils.parsing.QueryParserFactory;
-import ar.edu.itba.pod.tpe2.models.Infraction;
-import ar.edu.itba.pod.tpe2.models.Ticket;
+import ar.edu.itba.pod.tpe2.models.infraction.Infraction;
+import ar.edu.itba.pod.tpe2.models.ticket.Ticket;
 import ar.edu.itba.pod.tpe2.query2.*;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.core.HazelcastInstance;
@@ -19,16 +19,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 import static ar.edu.itba.pod.tpe2.client.utils.CSVUtils.*;
 
-public class Q2Client {
+public class Query2Client {
 
-    private static final Logger logger = LoggerFactory.getLogger(Q1Client.class);
+    private static final Logger logger = LoggerFactory.getLogger(Query1Client.class);
 
     private static final String QUERY_NAME = "query2";
     private static final String QUERY_RESULT_HEADER = "County;InfractionTop1;InfractionTop2;InfractionTop3";
@@ -47,7 +47,7 @@ public class Q2Client {
         }
 
         // Hazelcast client Config
-        HazelcastInstance hazelcastInstance = HazelcastConfigurator.configureHazelcastClient(arguments);
+        HazelcastInstance hazelcastInstance = HazelcastConfig.configureHazelcastClient(arguments);
 
 
         try {
@@ -55,28 +55,26 @@ public class Q2Client {
 
             String city = arguments.getCity();
 
-            Map<String, Infraction> infractions = parseInfractions(arguments.getInPath(), city)
-                    .stream()
-                    .collect(Collectors.toMap(Infraction::getCode, infraction -> infraction));
-            List<Ticket> tickets = parseTickets(arguments.getInPath(), city)
-                    .stream()
-                    .filter(ticket -> infractions.containsKey(ticket.getInfractionCode()))
-                    .toList();
 
-            logger.info("Finished reading and storing CSV files");
+            // Load infractions from CSV
+            Map<String, Infraction> infractions = new HashMap<>();
+            parseInfractions(arguments.getInPath(), city, infractions);
 
-            IList<Ticket> ticketList = hazelcastInstance.getList(CNP +"ticketList");
-            ticketList.addAll(tickets);
+            // Load tickets from CSV
+            IList<Ticket> ticketList = hazelcastInstance.getList(CNP + "ticketList");
+            parseTickets(arguments.getInPath(), city, ticketList, infractions);
 
-            JobTracker jobTracker = hazelcastInstance.getJobTracker(CNP + "jobQ2Tracker");
+
+
+            JobTracker jobTracker = hazelcastInstance.getJobTracker(CNP + QUERY_NAME + "jobTracker");
             KeyValueSource<String, Ticket> source = KeyValueSource.fromList(ticketList);
 
             Job<String, Ticket> job = jobTracker.newJob(source);
             Map<String, List<String>> result = job
-                    .mapper(new Q2Mapper())
-                    .combiner(new Q2CombinerFactory())
-                    .reducer(new Q2ReducerFactory())
-                    .submit(new Q2Collator(infractions))
+                    .mapper(new Query2Mapper())
+                    .combiner(new Query2CombinerFactory())
+                    .reducer(new Query2ReducerFactory())
+                    .submit(new Query2Collator(infractions))
                     .get();
 
             List<String> output = result.entrySet()
@@ -84,7 +82,8 @@ public class Q2Client {
                     .map(entry -> entry.getKey() + ";" + String.join(";", entry.getValue()))
                     .toList();
 
-            writeQueryResults(arguments.getOutPath(), QUERY_NAME, QUERY_RESULT_HEADER, output);
+
+           // writeQueryResults(arguments.getOutPath(), QUERY_NAME, QUERY_RESULT_HEADER, output);
 
         } catch (IOException e) {
             logger.error("Error processing MapReduce job", e);

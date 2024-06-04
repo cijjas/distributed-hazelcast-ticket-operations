@@ -1,11 +1,11 @@
-package ar.edu.itba.pod.tpe2.models;
+package ar.edu.itba.pod.tpe2.models.ticket.adapters;
+
+import ar.edu.itba.pod.tpe2.models.ticket.Ticket;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
-public class TicketNYCAdapter implements Ticket{
+public class TicketNYCAdapter implements Ticket {
     private final String plate;
     private final LocalDate issueDate;
     private final String infractionCode;

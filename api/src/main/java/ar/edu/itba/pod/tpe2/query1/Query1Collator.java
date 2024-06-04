@@ -1,16 +1,16 @@
 package ar.edu.itba.pod.tpe2.query1;
 
-import ar.edu.itba.pod.tpe2.models.Infraction;
+import ar.edu.itba.pod.tpe2.models.infraction.Infraction;
 import com.hazelcast.mapreduce.Collator;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-public class Q1Collator implements Collator<Map.Entry<String, Integer>, Map<String, Integer>> {
+public class Query1Collator implements Collator<Map.Entry<String, Integer>, Map<String, Integer>> {
     private final Map<String, Infraction> infractions;
 
-    public Q1Collator(Map<String, Infraction> infractions) {
+    public Query1Collator(Map<String, Infraction> infractions) {
         this.infractions = infractions;
     }
 

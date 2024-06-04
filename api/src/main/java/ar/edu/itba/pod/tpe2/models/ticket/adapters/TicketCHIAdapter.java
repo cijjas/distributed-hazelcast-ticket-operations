@@ -1,10 +1,11 @@
-package ar.edu.itba.pod.tpe2.models;
+package ar.edu.itba.pod.tpe2.models.ticket.adapters;
+
+import ar.edu.itba.pod.tpe2.models.ticket.Ticket;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
-public class TicketCHIAdapter  implements Ticket{
+public class TicketCHIAdapter  implements Ticket {
     private final LocalDate issueDate;
     private final String licensePlateNumber;
     private final String violationCode;

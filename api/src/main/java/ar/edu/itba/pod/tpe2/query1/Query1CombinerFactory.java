@@ -3,7 +3,7 @@ package ar.edu.itba.pod.tpe2.query1;
 import com.hazelcast.mapreduce.Combiner;
 import com.hazelcast.mapreduce.CombinerFactory;
 
-public class Q1CombinerFactory implements CombinerFactory<String, Integer, Integer> {
+public class Query1CombinerFactory implements CombinerFactory<String, Integer, Integer> {
 
     @Override
     public Combiner<Integer, Integer> newCombiner(String s) {
