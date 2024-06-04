@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CLIENT_JARS="../../client/target/tpe2-g7-client-2024.1Q/lib/jars/*"
-TARGET_CLIENT="ar.edu.itba.pod.tpe2.client.query5.Q1Client"
+TARGET_CLIENT="ar.edu.itba.pod.tpe2.client.query5.Q5Client"
 TARGET_DIR="../../client/target/tpe2-g7-client-2024.1Q"
 
 if [ ! -d "$TARGET_DIR" ]; then
