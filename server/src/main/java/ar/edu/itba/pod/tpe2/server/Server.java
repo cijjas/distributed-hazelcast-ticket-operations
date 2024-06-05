@@ -61,10 +61,10 @@ public class Server {
         config.setNetworkConfig(networkConfig);
 
         // Management Center Config
-        ManagementCenterConfig managementCenterConfig = new ManagementCenterConfig()
-                .setUrl("http://localhost:8080/mancenter-3.8.5/")
-                .setEnabled(true);
-        config.setManagementCenterConfig(managementCenterConfig);
+//        ManagementCenterConfig managementCenterConfig = new ManagementCenterConfig()
+//                .setUrl("http://localhost:8080/mancenter-3.8.5/")
+//                .setEnabled(true);
+//        config.setManagementCenterConfig(managementCenterConfig);
 
         return config;
     }

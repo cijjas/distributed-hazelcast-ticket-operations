@@ -27,3 +27,5 @@ replay_pid*
 /api/target/
 /server/target/
 /client/target/
+
+/resources/outputs
