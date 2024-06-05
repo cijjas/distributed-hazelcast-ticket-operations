@@ -15,7 +15,7 @@ public class Query2Collator implements Collator<Map.Entry<String, Map<String, In
     }
     @Override
     public Map<String, List<String>> collate(Iterable<Map.Entry<String, Map<String, Integer>>> values) {
-        Map<String, List<String>> result = new HashMap<>();
+        Map<String, List<String>> result = new TreeMap<>();
 
         for (Map.Entry<String, Map<String, Integer>> entry : values) {
             String county = entry.getKey();

@@ -92,14 +92,13 @@ public class Query1Client {
 
             writeQueryResults(arguments.getOutPath(), queryConfig.getQueryOutputFile(), QUERY_RESULT_HEADER, outputLines);
             timeLog.writeTimestamps();
-
+            ticketList.clear();
         } catch (IOException  e) {
             System.out.println("Error reading CSV files or processing MapReduce job");
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
-            IList<Ticket> ticketList = hazelcastInstance.getList(CNP + "ticketList");
-            ticketList.clear();
+
             HazelcastClient.shutdownAll();
         }
     }

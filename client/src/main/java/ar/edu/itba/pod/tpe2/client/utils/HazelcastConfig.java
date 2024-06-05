@@ -27,7 +27,7 @@ public class HazelcastConfig {
         // Nitro hazelast
         clientConfig.getSerializationConfig().setAllowUnsafe(true);
         clientConfig.setProperty("hazelcast.client.max.concurrent.invocations", "1000");
-        clientConfig.setProperty("hazelcast.client.invocation.timeout.seconds", "120");
+        //clientConfig.setProperty("hazelcast.client.invocation.timeout.seconds", "120");
 
         return HazelcastClient.newHazelcastClient(clientConfig);
     }
