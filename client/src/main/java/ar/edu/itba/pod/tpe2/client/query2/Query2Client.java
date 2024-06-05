@@ -2,6 +2,8 @@ package ar.edu.itba.pod.tpe2.client.query2;
 
 import ar.edu.itba.pod.tpe2.client.query1.Query1Client;
 import ar.edu.itba.pod.tpe2.client.utils.HazelcastConfig;
+import ar.edu.itba.pod.tpe2.client.utils.QueryConfig;
+import ar.edu.itba.pod.tpe2.client.utils.TimestampLogger;
 import ar.edu.itba.pod.tpe2.client.utils.parsing.BaseArguments;
 import ar.edu.itba.pod.tpe2.client.utils.parsing.QueryParser;
 import ar.edu.itba.pod.tpe2.client.utils.parsing.QueryParserFactory;
@@ -22,6 +24,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
 import static ar.edu.itba.pod.tpe2.client.utils.CSVUtils.*;
@@ -49,33 +52,41 @@ public class Query2Client {
         // Hazelcast client Config
         HazelcastInstance hazelcastInstance = HazelcastConfig.configureHazelcastClient(arguments);
 
+        QueryConfig queryConfig = new QueryConfig(QUERY_NAME + ".csv", "time2.txt");
+
+        TimestampLogger timeLog = new TimestampLogger(arguments.getOutPath(), queryConfig.getTimeOutputFile());
 
         try {
-            logger.info("Start reading and storing CSV files");
 
             String city = arguments.getCity();
+            timeLog.logStartReading();
 
 
             // Load infractions from CSV
-            Map<String, Infraction> infractions = new HashMap<>();
+            Map<String, Infraction> infractions = new ConcurrentHashMap<>();
             parseInfractions(arguments.getInPath(), city, infractions);
 
             // Load tickets from CSV
             IList<Ticket> ticketList = hazelcastInstance.getList(CNP + "ticketList");
+            ticketList.clear();
             parseTickets(arguments.getInPath(), city, ticketList, infractions);
 
+            timeLog.logEndReading();
 
 
             JobTracker jobTracker = hazelcastInstance.getJobTracker(CNP + QUERY_NAME + "jobTracker");
             KeyValueSource<String, Ticket> source = KeyValueSource.fromList(ticketList);
 
             Job<String, Ticket> job = jobTracker.newJob(source);
+            timeLog.logStartMapReduce();
+
             Map<String, List<String>> result = job
                     .mapper(new Query2Mapper())
                     .combiner(new Query2CombinerFactory())
                     .reducer(new Query2ReducerFactory())
                     .submit(new Query2Collator(infractions))
                     .get();
+            timeLog.logEndMapReduce();
 
             List<String> output = result.entrySet()
                     .stream()
@@ -83,7 +94,8 @@ public class Query2Client {
                     .toList();
 
 
-           // writeQueryResults(arguments.getOutPath(), QUERY_NAME, QUERY_RESULT_HEADER, output);
+            writeQueryResults(arguments.getOutPath(),  queryConfig.getQueryOutputFile(), QUERY_RESULT_HEADER, output);
+            timeLog.writeTimestamps();
 
         } catch (IOException e) {
             logger.error("Error processing MapReduce job", e);

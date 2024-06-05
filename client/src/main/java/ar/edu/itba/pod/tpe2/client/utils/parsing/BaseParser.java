@@ -60,7 +60,7 @@ public abstract class BaseParser implements QueryParser {
         }
         String[] addressArray = addresses.split(";");
         for (String address : addressArray) {
-            if (!address.matches("^([0-9]{1,3}\\.){3}[0-9]{1,3}:[0-9]+$")) {
+            if (!address.matches("^(([0-9]{1,3}\\.){3}[0-9]{1,3}|localhost):[0-9]+$")) {
                 throw new ParseException("Invalid address format: " + address);
             }
         }

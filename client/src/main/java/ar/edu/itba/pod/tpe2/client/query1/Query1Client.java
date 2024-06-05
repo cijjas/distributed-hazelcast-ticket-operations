@@ -5,7 +5,7 @@ import ar.edu.itba.pod.tpe2.client.utils.parsing.BaseArguments;
 import ar.edu.itba.pod.tpe2.client.utils.HazelcastConfig;
 import ar.edu.itba.pod.tpe2.client.utils.parsing.QueryParser;
 import ar.edu.itba.pod.tpe2.client.utils.parsing.QueryParserFactory;
-import ar.edu.itba.pod.tpe2.client.utils.timelogging.TimestampLogger;
+import ar.edu.itba.pod.tpe2.client.utils.TimestampLogger;
 import ar.edu.itba.pod.tpe2.models.infraction.Infraction;
 import ar.edu.itba.pod.tpe2.models.ticket.Ticket;
 import ar.edu.itba.pod.tpe2.query1.Query1Collator;
@@ -21,9 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
 import static ar.edu.itba.pod.tpe2.client.utils.CSVUtils.*;
@@ -61,11 +61,12 @@ public class Query1Client {
             // Load infractions from CSV
             timeLog.logStartReading();
 
-            Map<String, Infraction> infractions = new HashMap<>();
+            Map<String, Infraction> infractions = new ConcurrentHashMap<>();
             parseInfractions(arguments.getInPath(), city, infractions);
 
             // Load tickets from CSV
             IList<Ticket> ticketList = hazelcastInstance.getList(CNP + "ticketList");
+            ticketList.clear();
             parseTickets(arguments.getInPath(), city, ticketList, infractions);
 
             timeLog.logEndReading();
@@ -102,7 +103,6 @@ public class Query1Client {
             HazelcastClient.shutdownAll();
         }
     }
-
 
 
 }

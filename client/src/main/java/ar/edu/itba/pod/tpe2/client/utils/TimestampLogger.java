@@ -1,4 +1,4 @@
-package ar.edu.itba.pod.tpe2.client.utils.timelogging;
+package ar.edu.itba.pod.tpe2.client.utils;
 
 import lombok.extern.slf4j.Slf4j;
 

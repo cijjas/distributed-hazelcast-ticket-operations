@@ -1,4 +1,4 @@
-package ar.edu.itba.pod.tpe2.models.ticket.adapters;
+package ar.edu.itba.pod.tpe2.models.ticket.adapters.chi;
 
 import ar.edu.itba.pod.tpe2.models.ticket.Ticket;
 
@@ -52,9 +52,5 @@ public class TicketCHI implements Ticket {
         return unitDescription;
     }
 
-    @Override
-    public Ticket createTicket(String[] fields) {
-        return new TicketCHI(fields);
-    }
 
 }

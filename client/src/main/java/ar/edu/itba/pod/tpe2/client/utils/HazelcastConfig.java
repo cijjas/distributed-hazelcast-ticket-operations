@@ -23,6 +23,12 @@ public class HazelcastConfig {
         clientNetworkConfig.addAddress(arguments.getAddresses().split(";"));
 
         clientConfig.setNetworkConfig(clientNetworkConfig);
+
+        // Nitro hazelast
+        clientConfig.getSerializationConfig().setAllowUnsafe(true);
+        clientConfig.setProperty("hazelcast.client.max.concurrent.invocations", "1000");
+        clientConfig.setProperty("hazelcast.client.invocation.timeout.seconds", "120");
+
         return HazelcastClient.newHazelcastClient(clientConfig);
     }
 }
