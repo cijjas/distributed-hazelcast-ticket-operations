@@ -8,4 +8,4 @@ if [ ! -d "$TARGET_DIR" ]; then
     tar -xzf "../../client/target/tpe2-g7-client-2024.1Q-bin.tar.gz" -C "../../client/target/"
 fi
 
-java -cp "$CLIENT_JARS" "$TARGET_CLIENT" "$@"
+java -Dhazelcast.logging.type=none -cp "$CLIENT_JARS" "$TARGET_CLIENT" "$@"
