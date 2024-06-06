@@ -19,6 +19,7 @@ import ar.edu.itba.pod.tpe2.query3.Query3ReducerFactory;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IList;
+import com.hazelcast.core.MultiMap;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
@@ -51,6 +52,7 @@ public class Query3Client {
         }
         QueryConfig queryConfig = new QueryConfig(QUERY_NAME + ".csv", "time3.txt");
 
+        System.out.println("n" + arguments.getN());
         // Hazelcast client Config
         HazelcastInstance hazelcastInstance = HazelcastConfig.configureHazelcastClient(arguments);
 
@@ -67,14 +69,14 @@ public class Query3Client {
             parseInfractions(arguments.getInPath(), city, infractions);
 
             // Load tickets from CSV
-            IList<Ticket> ticketList = hazelcastInstance.getList(CNP + "ticketList");
-            ticketList.clear();
-            parseTickets(arguments.getInPath(), city, ticketList, infractions);
+            MultiMap<String, Ticket> ticketMultiMap = hazelcastInstance.getMultiMap(CNP + QUERY_NAME + "tickets");
+            ticketMultiMap.clear();
+            parseTicketsToMultiMapStream(arguments.getInPath(), city,ticketMultiMap, infractions);
 
             timeLog.logEndReading();
 
             JobTracker jobTracker = hazelcastInstance.getJobTracker(CNP + QUERY_NAME +"jobTracker");
-            KeyValueSource<String, Ticket> source = KeyValueSource.fromList(ticketList);
+            KeyValueSource<String, Ticket> source = KeyValueSource.fromMultiMap(ticketMultiMap);
 
             Job<String, Ticket> job = jobTracker.newJob(source);
             timeLog.logStartMapReduce();
@@ -94,13 +96,13 @@ public class Query3Client {
 
             writeQueryResults(arguments.getOutPath(), queryConfig.getQueryOutputFile(), QUERY_RESULT_HEADER, outputLines);
             timeLog.writeTimestamps();
-            ticketList.clear();
         } catch (IOException e) {
             System.out.println("Error reading CSV files or processing MapReduce job");
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
-
+            MultiMap<String, Ticket> ticketMultiMap = hazelcastInstance.getMultiMap(CNP + QUERY_NAME + "tickets");
+            ticketMultiMap.clear();
             HazelcastClient.shutdownAll();
         }
     }

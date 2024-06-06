@@ -13,6 +13,7 @@ import ar.edu.itba.pod.tpe2.query2.*;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IList;
+import com.hazelcast.core.MultiMap;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
@@ -67,15 +68,15 @@ public class Query2Client {
             parseInfractions(arguments.getInPath(), city, infractions);
 
             // Load tickets from CSV
-            IList<Ticket> ticketList = hazelcastInstance.getList(CNP + "ticketList");
-            ticketList.clear();
-            parseTickets(arguments.getInPath(), city, ticketList, infractions);
+            MultiMap<String, Ticket> ticketMultiMap = hazelcastInstance.getMultiMap(CNP + QUERY_NAME + "tickets");
+            ticketMultiMap.clear();
+            parseTicketsToMultiMapStream(arguments.getInPath(), city,ticketMultiMap, infractions);
 
             timeLog.logEndReading();
 
 
             JobTracker jobTracker = hazelcastInstance.getJobTracker(CNP + QUERY_NAME + "jobTracker");
-            KeyValueSource<String, Ticket> source = KeyValueSource.fromList(ticketList);
+            KeyValueSource<String, Ticket> source = KeyValueSource.fromMultiMap(ticketMultiMap);
 
             Job<String, Ticket> job = jobTracker.newJob(source);
             timeLog.logStartMapReduce();
@@ -102,8 +103,8 @@ public class Query2Client {
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
-            IList<Ticket> ticketList = hazelcastInstance.getList(CNP + "ticketList");
-            ticketList.clear();
+            MultiMap<String, Ticket> ticketMultiMap = hazelcastInstance.getMultiMap(CNP + QUERY_NAME + "tickets");
+            ticketMultiMap.clear();
             HazelcastClient.shutdownAll();
         }
     }

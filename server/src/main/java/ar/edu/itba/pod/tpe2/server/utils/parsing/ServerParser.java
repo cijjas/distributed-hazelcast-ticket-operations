@@ -12,7 +12,7 @@ public class ServerParser {
     private Collection<String> interfaces;
     private static final String DEFAULT_CLUSTER_NAME = "g7";
     private static final String DEFAULT_CLUSTER_PASSWORD = "g7-pass";
-    private static final String DEFAULT_INTERFACES = "127.0.0.*";
+    private static final String DEFAULT_INTERFACES = "192.168.0.*";
 
     private Options getOptions() {
         Options options = new Options();

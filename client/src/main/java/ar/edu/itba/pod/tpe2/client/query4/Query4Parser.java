@@ -11,8 +11,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 @Getter
-public class Q4Parser extends BaseParser {
-    private Q4Arguments arguments;
+public class Query4Parser extends BaseParser {
+    private Query4Arguments arguments;
 
     @Override
     protected void addCustomOptions(Options options) {
@@ -28,7 +28,7 @@ public class Q4Parser extends BaseParser {
         LocalDate fromDate = validateAndParseDate(from, "Dfrom");
         LocalDate toDate = validateAndParseDate(to, "Dto");
 
-        arguments = new Q4Arguments(super.getArguments().getAddresses(), super.getArguments().getCity(), super.getArguments().getInPath(), super.getArguments().getOutPath(), super.getArguments().getClusterName(), super.getArguments().getClusterPass(), fromDate, toDate);
+        arguments = new Query4Arguments(super.getArguments().getAddresses(), super.getArguments().getCity(), super.getArguments().getInPath(), super.getArguments().getOutPath(), super.getArguments().getClusterName(), super.getArguments().getClusterPass(), fromDate, toDate);
     }
 
     private LocalDate validateAndParseDate(String dateStr, String dateType) throws ParseException {

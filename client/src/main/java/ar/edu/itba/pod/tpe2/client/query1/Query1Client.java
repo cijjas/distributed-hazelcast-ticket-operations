@@ -65,14 +65,35 @@ public class Query1Client {
             parseInfractions(arguments.getInPath(), city, infractions);
 
             // Load tickets from CSV
-            IList<Ticket> ticketList = hazelcastInstance.getList(CNP + "ticketList");
+            MultiMap<String, Ticket> ticketMultiMap = hazelcastInstance.getMultiMap(CNP + QUERY_NAME + "tickets");
+            MultiMap<String, Ticket> ticketMultiMap2 = hazelcastInstance.getMultiMap(CNP + QUERY_NAME + "tickets2");
+            IList<Ticket> ticketList = hazelcastInstance.getList(CNP + QUERY_NAME + "ticketList");
+            ticketMultiMap2.clear();
+            ticketMultiMap.clear();
             ticketList.clear();
-            parseTickets(arguments.getInPath(), city, ticketList, infractions);
+
+
+            long startTimeList = System.currentTimeMillis();
+            parseTicketsToList(arguments.getInPath(), city,ticketList, infractions);
+            long endTimeList = System.currentTimeMillis();
+            System.out.println("List processing took: " + (endTimeList - startTimeList ) + " ms");
+
+
+            long startTimeBatch = System.currentTimeMillis();
+            parseTicketsToMultiMapBatch(arguments.getInPath(), city,ticketMultiMap2, infractions);
+            long endTimeBatch = System.currentTimeMillis();
+            System.out.println("Batch processing took: " + (endTimeBatch - startTimeBatch) + " ms");
+
+            long startTimeStream = System.currentTimeMillis();
+            parseTicketsToMultiMapStream(arguments.getInPath(), city,ticketMultiMap, infractions);
+            long endTimeStream = System.currentTimeMillis();
+            System.out.println("Stream.parallel() took: " + (endTimeStream - startTimeStream) + " ms");
+
 
             timeLog.logEndReading();
 
             JobTracker jobTracker = hazelcastInstance.getJobTracker(CNP + QUERY_NAME +"jobTracker");
-            KeyValueSource<String, Ticket> source = KeyValueSource.fromList(ticketList);
+            KeyValueSource<String, Ticket> source = KeyValueSource.fromMultiMap(ticketMultiMap);
 
             Job<String, Ticket> job = jobTracker.newJob(source);
             timeLog.logStartMapReduce();
@@ -92,13 +113,13 @@ public class Query1Client {
 
             writeQueryResults(arguments.getOutPath(), queryConfig.getQueryOutputFile(), QUERY_RESULT_HEADER, outputLines);
             timeLog.writeTimestamps();
-            ticketList.clear();
         } catch (IOException  e) {
             System.out.println("Error reading CSV files or processing MapReduce job");
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
-
+            MultiMap<String, Ticket> ticketMultiMap = hazelcastInstance.getMultiMap(CNP + QUERY_NAME + "tickets");
+            ticketMultiMap.clear();
             HazelcastClient.shutdownAll();
         }
     }
