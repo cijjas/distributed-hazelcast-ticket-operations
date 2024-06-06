@@ -7,11 +7,11 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 
 @Getter
-public class Q4Arguments extends BaseArguments {
+public class Query4Arguments extends BaseArguments {
     private final LocalDate from;
     private final LocalDate to;
 
-    public Q4Arguments(String addresses, String city, Path inPath, Path outPath, String clusterName, String clusterPass, LocalDate from, LocalDate to) {
+    public Query4Arguments(String addresses, String city, Path inPath, Path outPath, String clusterName, String clusterPass, LocalDate from, LocalDate to) {
         super(addresses, city, inPath, outPath, clusterName, clusterPass);
         this.from = from;
         this.to = to;

@@ -43,7 +43,7 @@ public class Query3Client {
         QueryParser parser = QueryParserFactory.getParser(QUERY_NAME);
 
         Query3Arguments arguments;
-        try{
+        try {
             arguments = (Query3Arguments) parser.getArguments(args);
         } catch (ParseException e) {
             System.out.println(e.getMessage());
@@ -69,11 +69,11 @@ public class Query3Client {
             // Load tickets from CSV
             IList<Ticket> ticketList = hazelcastInstance.getList(CNP + "ticketList");
             ticketList.clear();
-            parseTickets(arguments.getInPath(), city, ticketList, infractions);
+            parseTickets(arguments.getInPath(), city, ticketList, ticket -> hasInfraction(ticket, infractions));
 
             timeLog.logEndReading();
 
-            JobTracker jobTracker = hazelcastInstance.getJobTracker(CNP + QUERY_NAME +"jobTracker");
+            JobTracker jobTracker = hazelcastInstance.getJobTracker(CNP + QUERY_NAME + "jobTracker");
             KeyValueSource<String, Ticket> source = KeyValueSource.fromList(ticketList);
 
             Job<String, Ticket> job = jobTracker.newJob(source);
@@ -103,6 +103,12 @@ public class Query3Client {
 
             HazelcastClient.shutdownAll();
         }
+
+
+    }
+
+    public static boolean hasInfraction(Ticket ticket, Map<String, Infraction> infractions) {
+        return infractions.containsKey(ticket.getInfractionCode());
     }
 
 }

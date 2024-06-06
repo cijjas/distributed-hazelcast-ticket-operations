@@ -1,18 +1,17 @@
 package ar.edu.itba.pod.tpe2.client.query4;
 
+import ar.edu.itba.pod.tpe2.client.utils.parsing.BaseArguments;
 import ar.edu.itba.pod.tpe2.client.utils.parsing.BaseParser;
 import lombok.Getter;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 @Getter
-public class Q4Parser extends BaseParser {
-    private Q4Arguments arguments;
+public class Query4Parser extends BaseParser {
+    private Query4Arguments arguments;
 
     @Override
     protected void addCustomOptions(Options options) {
@@ -28,7 +27,7 @@ public class Q4Parser extends BaseParser {
         LocalDate fromDate = validateAndParseDate(from, "Dfrom");
         LocalDate toDate = validateAndParseDate(to, "Dto");
 
-        arguments = new Q4Arguments(super.getArguments().getAddresses(), super.getArguments().getCity(), super.getArguments().getInPath(), super.getArguments().getOutPath(), super.getArguments().getClusterName(), super.getArguments().getClusterPass(), fromDate, toDate);
+        arguments = new Query4Arguments(super.getArguments().getAddresses(), super.getArguments().getCity(), super.getArguments().getInPath(), super.getArguments().getOutPath(), super.getArguments().getClusterName(), super.getArguments().getClusterPass(), fromDate, toDate);
     }
 
     private LocalDate validateAndParseDate(String dateStr, String dateType) throws ParseException {
@@ -47,4 +46,13 @@ public class Q4Parser extends BaseParser {
         }
     }
 
+    @Override
+    public BaseArguments getArguments(String[] args) throws ParseException {
+        CommandLineParser cliParser = new DefaultParser();
+        Options options = super.getOptions();
+        CommandLine cmd = cliParser.parse(options, args);
+        super.parse(cmd);
+        parseCustomArguments(cmd);
+        return arguments;
+    }
 }

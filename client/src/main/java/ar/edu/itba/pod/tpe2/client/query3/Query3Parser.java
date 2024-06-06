@@ -4,9 +4,7 @@ package ar.edu.itba.pod.tpe2.client.query3;
 import ar.edu.itba.pod.tpe2.client.utils.parsing.BaseArguments;
 import ar.edu.itba.pod.tpe2.client.utils.parsing.BaseParser;
 import lombok.Getter;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.*;
 
 @Getter
 public class Query3Parser extends BaseParser {
@@ -30,5 +28,14 @@ public class Query3Parser extends BaseParser {
         arguments = new Query3Arguments(baseArgs.getAddresses(), baseArgs.getCity(), baseArgs.getInPath(), baseArgs.getOutPath(), baseArgs.getClusterName(), baseArgs.getClusterPass(), n);
     }
 
+    @Override
+    public BaseArguments getArguments(String[] args) throws ParseException {
+        CommandLineParser cliParser = new DefaultParser();
+        Options options = super.getOptions();
+        CommandLine cmd = cliParser.parse(options, args);
+        super.parse(cmd);
+        parseCustomArguments(cmd);
+        return arguments;
+    }
 
 }

@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public class CSVUtils {
@@ -32,7 +33,7 @@ public class CSVUtils {
         }
     }
 
-    public static void parseTickets(Path filePath, String city, IList<Ticket> ticketList, Map<String, Infraction> infractions) throws IOException {
+    public static void parseTickets(Path filePath, String city, IList<Ticket> ticketList, Predicate<Ticket> shouldAddToBatch) throws IOException {
         Path realPath = filePath.resolve(TICKETS + city + CSV_FORMAT);
         TicketAdapter ticketAdapter = TicketAdapterFactory.getAdapter(city);
 
@@ -43,7 +44,7 @@ public class CSVUtils {
             while ((line = br.readLine()) != null) {
                 String[] fields = line.split(SEPARATOR);
                 Ticket ticket = ticketAdapter.createTicket(fields);
-                if (infractions.containsKey(ticket.getInfractionCode())) {
+                if (shouldAddToBatch.test(ticket)) {
                     batch.add(ticket);
                     if (batch.size() == 1000) {  // Ajustar tamaño del lote según sea necesario
                         ticketList.addAll(batch);

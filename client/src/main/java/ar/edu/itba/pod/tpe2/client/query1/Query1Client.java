@@ -67,7 +67,7 @@ public class Query1Client {
             // Load tickets from CSV
             IList<Ticket> ticketList = hazelcastInstance.getList(CNP + "ticketList");
             ticketList.clear();
-            parseTickets(arguments.getInPath(), city, ticketList, infractions);
+            parseTickets(arguments.getInPath(), city, ticketList, ticket -> hasInfraction(ticket, infractions));
 
             timeLog.logEndReading();
 
@@ -103,5 +103,8 @@ public class Query1Client {
         }
     }
 
+    public static boolean hasInfraction(Ticket ticket, Map<String, Infraction> infractions) {
+        return infractions.containsKey(ticket.getInfractionCode());
+    }
 
 }
