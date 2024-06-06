@@ -1,17 +1,15 @@
 package ar.edu.itba.pod.tpe2.models.ticket;
 
-import ar.edu.itba.pod.tpe2.models.ticket.adapters.TicketAdapter;
-import ar.edu.itba.pod.tpe2.models.ticket.adapters.chi.TicketCHI;
-import ar.edu.itba.pod.tpe2.models.ticket.adapters.chi.TicketCHIAdapter;
-import ar.edu.itba.pod.tpe2.models.ticket.adapters.nyc.TicketNYC;
-import ar.edu.itba.pod.tpe2.models.ticket.adapters.nyc.TicketNYCAdapter;
+import ar.edu.itba.pod.tpe2.models.City;
+import ar.edu.itba.pod.tpe2.models.ticket.adapters.TicketCHI;
+import ar.edu.itba.pod.tpe2.models.ticket.adapters.TicketNYC;
 
 public class TicketAdapterFactory {
-    public static TicketAdapter getAdapter(String city) {
-        return switch (city.toUpperCase()) {
-            case "NYC" -> new TicketNYCAdapter();
-            case "CHI" -> new TicketCHIAdapter();
-            default -> throw new IllegalArgumentException("Unknown city: " + city);
+    public static Ticket getAdapter(City city) {
+        return switch (city) {
+            case NYC -> new TicketNYC();
+            case CHI -> new TicketCHI();
+            default -> throw new IllegalArgumentException("Invalid city: " + city);
         };
     }
 }

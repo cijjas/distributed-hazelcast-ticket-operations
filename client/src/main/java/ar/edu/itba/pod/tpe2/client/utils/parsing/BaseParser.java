@@ -1,6 +1,7 @@
 package ar.edu.itba.pod.tpe2.client.utils.parsing;
 
 
+import ar.edu.itba.pod.tpe2.models.City;
 import lombok.Getter;
 import org.apache.commons.cli.*;
 
@@ -47,7 +48,7 @@ public abstract class BaseParser implements QueryParser {
         Path outPath = validateAndConvertPath(outPathStr, "Output");
 
 
-        arguments = new BaseArguments(addresses, city, inPath, outPath, clusterName, clusterPass);
+        arguments = new BaseArguments(addresses, City.fromString(city), inPath, outPath, clusterName, clusterPass);
         parseCustomArguments(cmd);
     }
 
@@ -70,8 +71,10 @@ public abstract class BaseParser implements QueryParser {
         if (city == null || city.isEmpty()) {
             throw new ParseException("City must not be empty");
         }
-        if (!city.equals("NYC") && !city.equals("CHI")) {
-            throw new ParseException("Invalid city. Only 'NYC' and 'CHI' are allowed");
+        try {
+            City.fromString(city);
+        } catch (IllegalArgumentException e) {
+            throw new ParseException("Invalid city: " + city);
         }
     }
 

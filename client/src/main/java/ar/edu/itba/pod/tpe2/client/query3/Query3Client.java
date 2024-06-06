@@ -6,6 +6,7 @@ import ar.edu.itba.pod.tpe2.client.utils.TimestampLogger;
 import ar.edu.itba.pod.tpe2.client.utils.parsing.BaseArguments;
 import ar.edu.itba.pod.tpe2.client.utils.parsing.QueryParser;
 import ar.edu.itba.pod.tpe2.client.utils.parsing.QueryParserFactory;
+import ar.edu.itba.pod.tpe2.models.City;
 import ar.edu.itba.pod.tpe2.models.infraction.Infraction;
 import ar.edu.itba.pod.tpe2.models.ticket.Ticket;
 import ar.edu.itba.pod.tpe2.query1.Query1Collator;
@@ -38,45 +39,42 @@ public class Query3Client {
     private static final String QUERY_NAME = "query3";
     private static final String QUERY_RESULT_HEADER = "Issuing Agency;Percentage";
     private static final String CNP = "g7-"; // Cluster Name Prefix
-
+    private static final String TIME_OUTPUT_FILE = "time3.txt";
+    private static final String QUERY_OUTPUT_FILE = "query3.csv";
     public static void main(String[] args) {
 
         QueryParser parser = QueryParserFactory.getParser(QUERY_NAME);
 
-        Query3Arguments arguments;
+        BaseArguments arguments;
         try{
-            arguments = (Query3Arguments) parser.getArguments(args);
+            arguments = parser.getArguments(args);
         } catch (ParseException e) {
             System.out.println(e.getMessage());
             return;
         }
-        QueryConfig queryConfig = new QueryConfig(QUERY_NAME + ".csv", "time3.txt");
 
-        System.out.println("n" + arguments.getN());
+        QueryConfig queryConfig = new QueryConfig(QUERY_OUTPUT_FILE, TIME_OUTPUT_FILE);
+        City city = arguments.getCity();
+
         // Hazelcast client Config
         HazelcastInstance hazelcastInstance = HazelcastConfig.configureHazelcastClient(arguments);
-
         TimestampLogger timeLog = new TimestampLogger(arguments.getOutPath(), queryConfig.getTimeOutputFile());
 
         try {
-
-            String city = arguments.getCity();
-
-            // Load infractions from CSV
             timeLog.logStartReading();
-
+            // Parse infractions
             Map<String, Infraction> infractions = new ConcurrentHashMap<>();
             parseInfractions(arguments.getInPath(), city, infractions);
 
-            // Load tickets from CSV
-            MultiMap<String, Ticket> ticketMultiMap = hazelcastInstance.getMultiMap(CNP + QUERY_NAME + "tickets");
-            ticketMultiMap.clear();
-            parseTicketsToMultiMapStream(arguments.getInPath(), city,ticketMultiMap, infractions);
+            // Parse tickets
+            IList<Ticket> ticketList = hazelcastInstance.getList(CNP + QUERY_NAME + "ticketList");
+            ticketList.clear();
+            parseTicketsToList(arguments.getInPath(), city,ticketList, infractions);
 
             timeLog.logEndReading();
 
             JobTracker jobTracker = hazelcastInstance.getJobTracker(CNP + QUERY_NAME +"jobTracker");
-            KeyValueSource<String, Ticket> source = KeyValueSource.fromMultiMap(ticketMultiMap);
+            KeyValueSource<String, Ticket> source = KeyValueSource.fromList(ticketList);
 
             Job<String, Ticket> job = jobTracker.newJob(source);
             timeLog.logStartMapReduce();
@@ -84,7 +82,7 @@ public class Query3Client {
                     .mapper(new Query3Mapper())
                     .combiner(new Query3CombinerFactory())
                     .reducer(new Query3ReducerFactory())
-                    .submit(new Query3Collator(arguments.getN()))
+                    .submit(new Query3Collator(2))
                     .get();
             timeLog.logEndMapReduce();
 

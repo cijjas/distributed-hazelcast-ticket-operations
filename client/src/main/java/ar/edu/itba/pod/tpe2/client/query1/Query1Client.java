@@ -6,8 +6,10 @@ import ar.edu.itba.pod.tpe2.client.utils.HazelcastConfig;
 import ar.edu.itba.pod.tpe2.client.utils.parsing.QueryParser;
 import ar.edu.itba.pod.tpe2.client.utils.parsing.QueryParserFactory;
 import ar.edu.itba.pod.tpe2.client.utils.TimestampLogger;
+import ar.edu.itba.pod.tpe2.models.City;
 import ar.edu.itba.pod.tpe2.models.infraction.Infraction;
 import ar.edu.itba.pod.tpe2.models.ticket.Ticket;
+import ar.edu.itba.pod.tpe2.models.ticket.TicketAdapterFactory;
 import ar.edu.itba.pod.tpe2.query1.Query1Collator;
 import ar.edu.itba.pod.tpe2.query1.Query1CombinerFactory;
 import ar.edu.itba.pod.tpe2.query1.Query1Mapper;
@@ -21,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,6 +38,8 @@ public class Query1Client {
     private static final String QUERY_NAME = "query1";
     private static final String QUERY_RESULT_HEADER = "Infraction;Tickets";
     private static final String CNP = "g7-"; // Cluster Name Prefix
+    private static final String TIME_OUTPUT_FILE = "time1.txt";
+    private static final String QUERY_OUTPUT_FILE = "query1.csv";
 
     public static void main(String[] args) {
 
@@ -47,53 +52,30 @@ public class Query1Client {
             System.out.println(e.getMessage());
             return;
         }
-        QueryConfig queryConfig = new QueryConfig(QUERY_NAME + ".csv", "time1.txt");
+
+        QueryConfig queryConfig = new QueryConfig(QUERY_OUTPUT_FILE, TIME_OUTPUT_FILE);
+        City city = arguments.getCity();
 
         // Hazelcast client Config
         HazelcastInstance hazelcastInstance = HazelcastConfig.configureHazelcastClient(arguments);
-
         TimestampLogger timeLog = new TimestampLogger(arguments.getOutPath(), queryConfig.getTimeOutputFile());
 
+
         try {
-
-            String city = arguments.getCity();
-
-            // Load infractions from CSV
             timeLog.logStartReading();
-
+            // Parse infractions
             Map<String, Infraction> infractions = new ConcurrentHashMap<>();
             parseInfractions(arguments.getInPath(), city, infractions);
 
-            // Load tickets from CSV
-            MultiMap<String, Ticket> ticketMultiMap = hazelcastInstance.getMultiMap(CNP + QUERY_NAME + "tickets");
-            MultiMap<String, Ticket> ticketMultiMap2 = hazelcastInstance.getMultiMap(CNP + QUERY_NAME + "tickets2");
+            // Parse tickets
             IList<Ticket> ticketList = hazelcastInstance.getList(CNP + QUERY_NAME + "ticketList");
-            ticketMultiMap2.clear();
-            ticketMultiMap.clear();
             ticketList.clear();
-
-
-            long startTimeList = System.currentTimeMillis();
             parseTicketsToList(arguments.getInPath(), city,ticketList, infractions);
-            long endTimeList = System.currentTimeMillis();
-            System.out.println("List processing took: " + (endTimeList - startTimeList ) + " ms");
-
-
-            long startTimeBatch = System.currentTimeMillis();
-            parseTicketsToMultiMapBatch(arguments.getInPath(), city,ticketMultiMap2, infractions);
-            long endTimeBatch = System.currentTimeMillis();
-            System.out.println("Batch processing took: " + (endTimeBatch - startTimeBatch) + " ms");
-
-            long startTimeStream = System.currentTimeMillis();
-            parseTicketsToMultiMapStream(arguments.getInPath(), city,ticketMultiMap, infractions);
-            long endTimeStream = System.currentTimeMillis();
-            System.out.println("Stream.parallel() took: " + (endTimeStream - startTimeStream) + " ms");
-
 
             timeLog.logEndReading();
 
             JobTracker jobTracker = hazelcastInstance.getJobTracker(CNP + QUERY_NAME +"jobTracker");
-            KeyValueSource<String, Ticket> source = KeyValueSource.fromMultiMap(ticketMultiMap);
+            KeyValueSource<String, Ticket> source = KeyValueSource.fromList(ticketList);
 
             Job<String, Ticket> job = jobTracker.newJob(source);
             timeLog.logStartMapReduce();
@@ -118,8 +100,6 @@ public class Query1Client {
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
-            MultiMap<String, Ticket> ticketMultiMap = hazelcastInstance.getMultiMap(CNP + QUERY_NAME + "tickets");
-            ticketMultiMap.clear();
             HazelcastClient.shutdownAll();
         }
     }

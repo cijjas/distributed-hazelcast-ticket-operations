@@ -1,4 +1,4 @@
-package ar.edu.itba.pod.tpe2.models.ticket.adapters.nyc;
+package ar.edu.itba.pod.tpe2.models.ticket.adapters;
 
 import ar.edu.itba.pod.tpe2.models.ticket.Ticket;
 import com.hazelcast.nio.ObjectDataInput;
