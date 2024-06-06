@@ -1,6 +1,7 @@
 package ar.edu.itba.pod.tpe2.models.ticket;
 
 import ar.edu.itba.pod.tpe2.models.City;
+import ar.edu.itba.pod.tpe2.models.ticket.adapters.Ticket;
 import ar.edu.itba.pod.tpe2.models.ticket.adapters.TicketCHI;
 import ar.edu.itba.pod.tpe2.models.ticket.adapters.TicketNYC;
 
