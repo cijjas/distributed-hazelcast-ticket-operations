@@ -1,6 +1,6 @@
 package ar.edu.itba.pod.tpe2.query4;
 
-import ar.edu.itba.pod.tpe2.models.ticket.Ticket;
+import ar.edu.itba.pod.tpe2.models.ticket.adapters.Ticket;
 import com.hazelcast.mapreduce.KeyPredicate;
 
 import java.time.LocalDate;

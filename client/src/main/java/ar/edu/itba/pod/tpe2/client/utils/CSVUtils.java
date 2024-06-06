@@ -2,9 +2,9 @@ package ar.edu.itba.pod.tpe2.client.utils;
 
 import ar.edu.itba.pod.tpe2.models.City;
 import ar.edu.itba.pod.tpe2.models.infraction.Infraction;
-import ar.edu.itba.pod.tpe2.models.ticket.Ticket;
-import ar.edu.itba.pod.tpe2.models.ticket.TicketAdapterFactory;
-import com.hazelcast.core.IList;
+import ar.edu.itba.pod.tpe2.models.ticket.adapters.Ticket;
+import ar.edu.itba.pod.tpe2.models.ticket.services.TicketAdapterFactory;
+import com.hazelcast.core.*;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -31,6 +32,45 @@ public class CSVUtils {
                     .map(line -> line.split(SEPARATOR))
                     .map(fields -> new Infraction(fields[0], fields[1]))
                     .forEach(infraction -> infractions.put(infraction.getCode(), infraction));
+        }
+    }
+
+    public static void parseTicketsToMap(Path filePath, City city, HazelcastInstance hazelcastInstance, IMap<Long, Ticket> ticketMap, Predicate<Ticket> shouldAddToBatch) throws IOException {
+        Path realPath = filePath.resolve(TICKETS + city + CSV_FORMAT);
+        Ticket ticketAdapter = TicketAdapterFactory.getAdapter(city);
+        IdGenerator idGenerator = hazelcastInstance.getIdGenerator("ticketIdGenerator");
+
+        List<ICompletableFuture<Void>> futures = new ArrayList<>();
+        try (BufferedReader br = Files.newBufferedReader(realPath)) {
+            String line;
+            br.readLine(); // Skip header
+            while ((line = br.readLine()) != null) {
+                String[] fields = line.split(SEPARATOR);
+                Ticket ticket = ticketAdapter.createTicket(fields);
+                if (shouldAddToBatch.test(ticket)) {
+                    long id = idGenerator.newId(); // Generate a unique ID for each ticket
+                    ICompletableFuture<Void> future = ticketMap.setAsync(id, ticket);
+                    futures.add(future);
+                    if (futures.size() >= 9999) { // Wait every 100 operations
+                        waitForFutures(futures);
+                        futures.clear();
+                    }
+                }
+            }
+            if (!futures.isEmpty()) {
+                waitForFutures(futures); // Wait for any remaining futures
+            }
+        }
+    }
+
+    private static void waitForFutures(List<ICompletableFuture<Void>> futures) {
+        for (ICompletableFuture<Void> future : futures) {
+            try {
+                future.get(); // Blocking call to ensure the operation is completed
+            } catch (InterruptedException | ExecutionException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(e);
+            }
         }
     }
 

@@ -9,7 +9,7 @@ import ar.edu.itba.pod.tpe2.client.utils.parsing.QueryParser;
 import ar.edu.itba.pod.tpe2.client.utils.parsing.QueryParserFactory;
 import ar.edu.itba.pod.tpe2.models.City;
 import ar.edu.itba.pod.tpe2.models.infraction.Infraction;
-import ar.edu.itba.pod.tpe2.models.ticket.Ticket;
+import ar.edu.itba.pod.tpe2.models.ticket.adapters.Ticket;
 import ar.edu.itba.pod.tpe2.query2.*;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.core.HazelcastInstance;
@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

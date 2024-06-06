@@ -8,21 +8,23 @@ import ar.edu.itba.pod.tpe2.client.utils.parsing.QueryParserFactory;
 import ar.edu.itba.pod.tpe2.client.utils.TimestampLogger;
 import ar.edu.itba.pod.tpe2.models.City;
 import ar.edu.itba.pod.tpe2.models.infraction.Infraction;
-import ar.edu.itba.pod.tpe2.models.ticket.Ticket;
-import ar.edu.itba.pod.tpe2.models.ticket.TicketAdapterFactory;
+import ar.edu.itba.pod.tpe2.models.ticket.adapters.Ticket;
 import ar.edu.itba.pod.tpe2.query1.Query1Collator;
 import ar.edu.itba.pod.tpe2.query1.Query1CombinerFactory;
 import ar.edu.itba.pod.tpe2.query1.Query1Mapper;
 import ar.edu.itba.pod.tpe2.query1.Query1ReducerFactory;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.core.*;
+import com.hazelcast.map.impl.LegacyAsyncMap;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
 
+import javax.management.timer.Timer;
 import java.io.IOException;
+import java.security.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -63,11 +65,26 @@ public class Query1Client {
             // Parse infractions
             Map<String, Infraction> infractions = new ConcurrentHashMap<>();
             parseInfractions(arguments.getInPath(), city, infractions);
-
             // Parse tickets
+            IMap<Long, Ticket> ticketMap = hazelcastInstance.getMap(CNP + QUERY_NAME + "ticketMap");
+            ticketMap.clear();
             IList<Ticket> ticketList = hazelcastInstance.getList(CNP + QUERY_NAME + "ticketList");
             ticketList.clear();
+
+            // measure time
+            long start, end;
+
+            // Timing parseTicketsToMap
+            start = System.nanoTime();
+            parseTicketsToMap(arguments.getInPath(), city, hazelcastInstance, ticketMap, ticket -> hasInfraction(ticket, infractions));
+            end = System.nanoTime();
+            System.out.println("parseTicketsToMap took: " + (end - start) / 1_000_000 + " ms");
+
+            // Timing parseTickets
+            start = System.nanoTime();
             parseTickets(arguments.getInPath(), city, ticketList, ticket -> hasInfraction(ticket, infractions));
+            end = System.nanoTime();
+            System.out.println("parseTickets took: " + (end - start) / 1_000_000 + " ms");
 
             timeLog.logEndReading();
 

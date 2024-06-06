@@ -1,6 +1,5 @@
-package ar.edu.itba.pod.tpe2.models.ticket;
+package ar.edu.itba.pod.tpe2.models.ticket.adapters;
 
-import java.io.Serializable;
 import java.time.LocalDate;
 
 public interface Ticket  {

@@ -1,6 +1,5 @@
 package ar.edu.itba.pod.tpe2.models.ticket.adapters;
 
-import ar.edu.itba.pod.tpe2.models.ticket.Ticket;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.DataSerializable;

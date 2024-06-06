@@ -1,7 +1,7 @@
 package ar.edu.itba.pod.tpe2.client.utils;
 
 import ar.edu.itba.pod.tpe2.client.utils.parsing.BaseArguments;
-import ar.edu.itba.pod.tpe2.models.ticket.TicketFactory;
+import ar.edu.itba.pod.tpe2.models.ticket.services.TicketFactory;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.client.config.ClientNetworkConfig;
@@ -31,7 +31,7 @@ public class HazelcastConfig {
         serializationConfig.addDataSerializableFactory(arguments.getCity().ordinal(), new TicketFactory());
 
         clientConfig.getSerializationConfig().setAllowUnsafe(true);
-        clientConfig.setProperty("hazelcast.client.max.concurrent.invocations", "1000");
+        clientConfig.setProperty("hazelcast.client.max.concurrent.invocations", "10000");
         //clientConfig.setProperty("hazelcast.client.invocation.timeout.seconds", "120");
 
         return HazelcastClient.newHazelcastClient(clientConfig);

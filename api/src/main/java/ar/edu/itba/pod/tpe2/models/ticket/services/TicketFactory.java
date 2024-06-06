@@ -1,4 +1,4 @@
-package ar.edu.itba.pod.tpe2.models.ticket;
+package ar.edu.itba.pod.tpe2.models.ticket.services;
 
 import ar.edu.itba.pod.tpe2.models.City;
 import ar.edu.itba.pod.tpe2.models.ticket.adapters.TicketCHI;
