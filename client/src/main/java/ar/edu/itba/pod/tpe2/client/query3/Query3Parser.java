@@ -11,12 +11,23 @@ public class Query3Parser extends BaseParser {
     private Query3Arguments arguments;
 
     @Override
-    protected void addCustomOptions(Options options) {
+    public Options getOptions() {
+        Options options = super.getOptions();
+        addCustomOptions(options);
+        return options;
+    }
+
+    private void addCustomOptions(Options options) {
         options.addRequiredOption("Dn", "Dn", true, "Number of top agencies");
     }
 
     @Override
-    protected void parseCustomArguments(CommandLine cmd) throws ParseException {
+    public void parse(CommandLine cmd) throws ParseException {
+        super.parse(cmd);
+        parseCustomArguments(cmd);
+    }
+
+    private void parseCustomArguments(CommandLine cmd) throws ParseException {
         String nValue = cmd.getOptionValue("Dn");
         int n;
         try {
@@ -31,10 +42,9 @@ public class Query3Parser extends BaseParser {
     @Override
     public BaseArguments getArguments(String[] args) throws ParseException {
         CommandLineParser cliParser = new DefaultParser();
-        Options options = super.getOptions();
+        Options options = getOptions();
         CommandLine cmd = cliParser.parse(options, args);
-        super.parse(cmd);
-        parseCustomArguments(cmd);
+        parse(cmd);
         return arguments;
     }
 

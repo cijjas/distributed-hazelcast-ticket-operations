@@ -30,8 +30,6 @@ import static ar.edu.itba.pod.tpe2.client.utils.CSVUtils.*;
 
 @Slf4j
 public class Query1Client {
-
-
     private static final String QUERY_NAME = "query1";
     private static final String QUERY_RESULT_HEADER = "Infraction;Tickets";
     private static final String CNP = "g7-"; // Cluster Name Prefix
@@ -41,7 +39,7 @@ public class Query1Client {
         QueryParser parser = QueryParserFactory.getParser(QUERY_NAME);
 
         BaseArguments arguments;
-        try{
+        try {
             arguments = parser.getArguments(args);
         } catch (ParseException e) {
             System.out.println(e.getMessage());
@@ -71,7 +69,7 @@ public class Query1Client {
 
             timeLog.logEndReading();
 
-            JobTracker jobTracker = hazelcastInstance.getJobTracker(CNP + QUERY_NAME +"jobTracker");
+            JobTracker jobTracker = hazelcastInstance.getJobTracker(CNP + QUERY_NAME + "jobTracker");
             KeyValueSource<String, Ticket> source = KeyValueSource.fromList(ticketList);
 
             Job<String, Ticket> job = jobTracker.newJob(source);
@@ -93,7 +91,7 @@ public class Query1Client {
             writeQueryResults(arguments.getOutPath(), queryConfig.getQueryOutputFile(), QUERY_RESULT_HEADER, outputLines);
             timeLog.writeTimestamps();
             ticketList.clear();
-        } catch (IOException  e) {
+        } catch (IOException e) {
             System.out.println("Error reading CSV files or processing MapReduce job");
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);

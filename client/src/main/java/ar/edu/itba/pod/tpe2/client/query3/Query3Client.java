@@ -60,16 +60,12 @@ public class Query3Client {
 
             String city = arguments.getCity();
 
-            // Load infractions from CSV
             timeLog.logStartReading();
-
-            Map<String, Infraction> infractions = new ConcurrentHashMap<>();
-            parseInfractions(arguments.getInPath(), city, infractions);
 
             // Load tickets from CSV
             IList<Ticket> ticketList = hazelcastInstance.getList(CNP + "ticketList");
             ticketList.clear();
-            parseTickets(arguments.getInPath(), city, ticketList, ticket -> hasInfraction(ticket, infractions));
+            parseTickets(arguments.getInPath(), city, ticketList, ticket -> true);
 
             timeLog.logEndReading();
 
@@ -103,12 +99,6 @@ public class Query3Client {
 
             HazelcastClient.shutdownAll();
         }
-
-
-    }
-
-    public static boolean hasInfraction(Ticket ticket, Map<String, Infraction> infractions) {
-        return infractions.containsKey(ticket.getInfractionCode());
     }
 
 }
