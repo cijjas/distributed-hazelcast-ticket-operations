@@ -20,7 +20,6 @@ import ar.edu.itba.pod.tpe2.query3.Query3ReducerFactory;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IList;
-import com.hazelcast.core.MultiMap;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
@@ -45,9 +44,9 @@ public class Query3Client {
 
         QueryParser parser = QueryParserFactory.getParser(QUERY_NAME);
 
-        BaseArguments arguments;
-        try{
-            arguments = parser.getArguments(args);
+        Query3Arguments arguments;
+        try {
+            arguments = (Query3Arguments) parser.getArguments(args);
         } catch (ParseException e) {
             System.out.println(e.getMessage());
             return;
@@ -69,11 +68,11 @@ public class Query3Client {
             // Parse tickets
             IList<Ticket> ticketList = hazelcastInstance.getList(CNP + QUERY_NAME + "ticketList");
             ticketList.clear();
-            parseTicketsToList(arguments.getInPath(), city,ticketList, infractions);
+            parseTickets(arguments.getInPath(), city, ticketList, ticket -> true);
 
             timeLog.logEndReading();
 
-            JobTracker jobTracker = hazelcastInstance.getJobTracker(CNP + QUERY_NAME +"jobTracker");
+            JobTracker jobTracker = hazelcastInstance.getJobTracker(CNP + QUERY_NAME + "jobTracker");
             KeyValueSource<String, Ticket> source = KeyValueSource.fromList(ticketList);
 
             Job<String, Ticket> job = jobTracker.newJob(source);
@@ -82,7 +81,7 @@ public class Query3Client {
                     .mapper(new Query3Mapper())
                     .combiner(new Query3CombinerFactory())
                     .reducer(new Query3ReducerFactory())
-                    .submit(new Query3Collator(2))
+                    .submit(new Query3Collator(arguments.getN()))
                     .get();
             timeLog.logEndMapReduce();
 
@@ -99,8 +98,7 @@ public class Query3Client {
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
-            MultiMap<String, Ticket> ticketMultiMap = hazelcastInstance.getMultiMap(CNP + QUERY_NAME + "tickets");
-            ticketMultiMap.clear();
+
             HazelcastClient.shutdownAll();
         }
     }

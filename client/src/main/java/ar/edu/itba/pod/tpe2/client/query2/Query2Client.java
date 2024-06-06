@@ -14,7 +14,6 @@ import ar.edu.itba.pod.tpe2.query2.*;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IList;
-import com.hazelcast.core.MultiMap;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
@@ -70,7 +69,7 @@ public class Query2Client {
             // Parse tickets
             IList<Ticket> ticketList = hazelcastInstance.getList(CNP + QUERY_NAME + "ticketList");
             ticketList.clear();
-            parseTicketsToList(arguments.getInPath(), city,ticketList, infractions);
+            parseTickets(arguments.getInPath(), city, ticketList, ticket -> hasInfraction(ticket, infractions));
 
             timeLog.logEndReading();
 
@@ -103,9 +102,13 @@ public class Query2Client {
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
-            MultiMap<String, Ticket> ticketMultiMap = hazelcastInstance.getMultiMap(CNP + QUERY_NAME + "tickets");
-            ticketMultiMap.clear();
+            IList<Ticket> ticketList = hazelcastInstance.getList(CNP + "ticketList");
+            ticketList.clear();
             HazelcastClient.shutdownAll();
         }
+    }
+
+    public static boolean hasInfraction(Ticket ticket, Map<String, Infraction> infractions) {
+        return infractions.containsKey(ticket.getInfractionCode());
     }
 }
