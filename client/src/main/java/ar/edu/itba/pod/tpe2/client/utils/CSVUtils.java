@@ -34,7 +34,7 @@ public class CSVUtils {
         }
     }
 
-    public static void parseTickets(Path filePath, String city, IList<Ticket> ticketList, Predicate<Ticket> shouldAddToBatch) throws IOException {
+    public static void parseTickets(Path filePath, City city, IList<Ticket> ticketList, Predicate<Ticket> shouldAddToBatch) throws IOException {
         Path realPath = filePath.resolve(TICKETS + city + CSV_FORMAT);
         Ticket ticketAdapter = TicketAdapterFactory.getAdapter(city);
 

@@ -78,5 +78,11 @@ public class TicketNYC implements Ticket, DataSerializable {
 
     @Override
     public void readData(ObjectDataInput objectDataInput) throws IOException {
+        plate = objectDataInput.readUTF();
+        issueDate = LocalDate.parse(objectDataInput.readUTF());
+        infractionCode = objectDataInput.readUTF();
+        fineAmount = objectDataInput.readDouble();
+        countyName = objectDataInput.readUTF();
+        issuingAgency = objectDataInput.readUTF();
     }
 }

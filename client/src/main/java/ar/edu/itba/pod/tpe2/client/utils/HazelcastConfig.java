@@ -28,7 +28,6 @@ public class HazelcastConfig {
 
         // Nitro hazelast
         SerializationConfig serializationConfig = clientConfig.getSerializationConfig();
-        System.out.println("City: " + arguments.getCity().ordinal());
         serializationConfig.addDataSerializableFactory(arguments.getCity().ordinal(), new TicketFactory());
 
         clientConfig.getSerializationConfig().setAllowUnsafe(true);

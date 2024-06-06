@@ -80,7 +80,7 @@ public class Query1Client {
                     .mapper(new Query1Mapper())
                     .combiner(new Query1CombinerFactory())
                     .reducer(new Query1ReducerFactory())
-                    .submit(new Query1Collator(infractions)) // TODO MIRAR infractions
+                    .submit(new Query1Collator(infractions))
                     .get();
             timeLog.logEndMapReduce();
 
@@ -92,6 +92,7 @@ public class Query1Client {
 
             writeQueryResults(arguments.getOutPath(), queryConfig.getQueryOutputFile(), QUERY_RESULT_HEADER, outputLines);
             timeLog.writeTimestamps();
+            ticketList.clear();
         } catch (IOException  e) {
             System.out.println("Error reading CSV files or processing MapReduce job");
         } catch (ExecutionException | InterruptedException e) {

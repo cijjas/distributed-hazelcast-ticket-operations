@@ -75,6 +75,11 @@ public class TicketCHI implements Ticket, DataSerializable {
 
     @Override
     public void readData(ObjectDataInput objectDataInput) throws IOException {
-
+        issueDate = LocalDate.parse(objectDataInput.readUTF());
+        licensePlateNumber = objectDataInput.readUTF();
+        violationCode = objectDataInput.readUTF();
+        unitDescription = objectDataInput.readUTF();
+        fineLevel1Amount = objectDataInput.readDouble();
+        communityAreaName = objectDataInput.readUTF();
     }
 }
