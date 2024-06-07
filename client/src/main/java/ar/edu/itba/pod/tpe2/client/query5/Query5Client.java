@@ -8,7 +8,7 @@ import ar.edu.itba.pod.tpe2.client.utils.parsing.QueryParserFactory;
 import ar.edu.itba.pod.tpe2.client.utils.TimestampLogger;
 import ar.edu.itba.pod.tpe2.models.City;
 import ar.edu.itba.pod.tpe2.models.infraction.Infraction;
-import ar.edu.itba.pod.tpe2.models.ticket.Ticket;
+import ar.edu.itba.pod.tpe2.models.ticket.adapters.Ticket;
 import ar.edu.itba.pod.tpe2.query5.*;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.core.*;

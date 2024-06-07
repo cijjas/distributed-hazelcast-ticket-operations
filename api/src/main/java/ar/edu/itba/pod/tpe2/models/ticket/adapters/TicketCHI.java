@@ -7,6 +7,7 @@ import com.hazelcast.nio.serialization.DataSerializable;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 public class TicketCHI implements Ticket, DataSerializable {
     private LocalDate issueDate;
@@ -15,10 +16,14 @@ public class TicketCHI implements Ticket, DataSerializable {
     private String unitDescription;
     private Double fineLevel1Amount;
     private String communityAreaName;
+
     @Override
     public Ticket createTicket(String[] fields) {
         return new TicketCHI(fields);
     }
+
+
+
     public TicketCHI(){
 
     }

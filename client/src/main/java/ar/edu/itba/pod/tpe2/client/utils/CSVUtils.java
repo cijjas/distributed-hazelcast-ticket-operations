@@ -5,15 +5,17 @@ import ar.edu.itba.pod.tpe2.models.infraction.Infraction;
 import ar.edu.itba.pod.tpe2.models.ticket.adapters.Ticket;
 import ar.edu.itba.pod.tpe2.models.ticket.services.TicketAdapterFactory;
 import com.hazelcast.core.*;
+import com.univocity.parsers.csv.CsvParser;
+import com.univocity.parsers.csv.CsvParserSettings;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -22,7 +24,7 @@ public class CSVUtils {
     private static final String TICKETS = "tickets";
     private static final String CSV_FORMAT = ".csv";
     private static final String SEPARATOR = ";";
-    private static final Integer BATCH_SIZE = 1000;
+    private static final Integer BATCH_SIZE = 20000;
 
     public static void parseInfractions(Path filePath, City city, Map<String, Infraction> infractions) throws IOException {
         Path realPath = filePath.resolve(INFRACTIONS + city.name() + CSV_FORMAT);
@@ -35,42 +37,47 @@ public class CSVUtils {
         }
     }
 
-    public static void parseTicketsToMap(Path filePath, City city, HazelcastInstance hazelcastInstance, IMap<Long, Ticket> ticketMap, Predicate<Ticket> shouldAddToBatch) throws IOException {
-        Path realPath = filePath.resolve(TICKETS + city + CSV_FORMAT);
+    public static void parseTicketsToMap(Path filePath, City city, HazelcastInstance hazelcastInstance,
+                                         IMap<Long, Ticket> ticketMap, Predicate<Ticket> shouldAddToBatch) throws IOException {
+        Path realPath = filePath.resolve("tickets" + city + ".csv");
         Ticket ticketAdapter = TicketAdapterFactory.getAdapter(city);
+        int batchSize = BATCH_SIZE;
         IdGenerator idGenerator = hazelcastInstance.getIdGenerator("ticketIdGenerator");
+        Map<Long, Ticket> batchMap = new HashMap<>(batchSize);
 
-        List<ICompletableFuture<Void>> futures = new ArrayList<>();
-        try (BufferedReader br = Files.newBufferedReader(realPath)) {
-            String line;
-            br.readLine(); // Skip header
-            while ((line = br.readLine()) != null) {
-                String[] fields = line.split(SEPARATOR);
-                Ticket ticket = ticketAdapter.createTicket(fields);
+        // Configure the CSV parser
+        CsvParserSettings settings = new CsvParserSettings();
+        settings.setHeaderExtractionEnabled(true);  // Extract headers
+        settings.getFormat().setDelimiter(';');     // Set delimiter
+
+        // Create a parser instance
+        CsvParser parser = new CsvParser(settings);
+
+        // Parse the CSV file
+        try (FileReader reader = new FileReader(realPath.toFile())) {
+            parser.beginParsing(reader);
+
+            com.univocity.parsers.common.record.Record record;
+            while ((record = parser.parseNextRecord()) != null) {
+
+                Ticket ticket = ticketAdapter.createTicket(record.getValues());
                 if (shouldAddToBatch.test(ticket)) {
-                    long id = idGenerator.newId(); // Generate a unique ID for each ticket
-                    ICompletableFuture<Void> future = ticketMap.setAsync(id, ticket);
-                    futures.add(future);
-                    if (futures.size() >= 9999) { // Wait every 100 operations
-                        waitForFutures(futures);
-                        futures.clear();
+                    long id = idGenerator.newId();
+                    batchMap.put(id, ticket);
+                    if (batchMap.size() >= batchSize) {
+                        ticketMap.putAll(batchMap);
+                        batchMap.clear();
                     }
                 }
             }
-            if (!futures.isEmpty()) {
-                waitForFutures(futures); // Wait for any remaining futures
-            }
-        }
-    }
 
-    private static void waitForFutures(List<ICompletableFuture<Void>> futures) {
-        for (ICompletableFuture<Void> future : futures) {
-            try {
-                future.get(); // Blocking call to ensure the operation is completed
-            } catch (InterruptedException | ExecutionException e) {
-                Thread.currentThread().interrupt();
-                throw new RuntimeException(e);
+            // Insert any remaining tickets in the batchMap
+            if (!batchMap.isEmpty()) {
+                ticketMap.putAll(batchMap);
             }
+
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading CSV file", e);
         }
     }
 

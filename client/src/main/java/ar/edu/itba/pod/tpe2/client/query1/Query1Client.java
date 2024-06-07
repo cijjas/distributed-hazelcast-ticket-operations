@@ -19,14 +19,19 @@ import com.hazelcast.map.impl.LegacyAsyncMap;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
+import com.opencsv.CSVReader;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
 
 import javax.management.timer.Timer;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.security.Timestamp;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
@@ -61,37 +66,21 @@ public class Query1Client {
 
 
         try {
-            timeLog.logStartReading();
             // Parse infractions
             Map<String, Infraction> infractions = new ConcurrentHashMap<>();
             parseInfractions(arguments.getInPath(), city, infractions);
             // Parse tickets
             IMap<Long, Ticket> ticketMap = hazelcastInstance.getMap(CNP + QUERY_NAME + "ticketMap");
             ticketMap.clear();
-            IList<Ticket> ticketList = hazelcastInstance.getList(CNP + QUERY_NAME + "ticketList");
-            ticketList.clear();
 
-            // measure time
-            long start, end;
-
-            // Timing parseTicketsToMap
-            start = System.nanoTime();
+            timeLog.logStartReading();
             parseTicketsToMap(arguments.getInPath(), city, hazelcastInstance, ticketMap, ticket -> hasInfraction(ticket, infractions));
-            end = System.nanoTime();
-            System.out.println("parseTicketsToMap took: " + (end - start) / 1_000_000 + " ms");
-
-            // Timing parseTickets
-            start = System.nanoTime();
-            parseTickets(arguments.getInPath(), city, ticketList, ticket -> hasInfraction(ticket, infractions));
-            end = System.nanoTime();
-            System.out.println("parseTickets took: " + (end - start) / 1_000_000 + " ms");
-
             timeLog.logEndReading();
 
             JobTracker jobTracker = hazelcastInstance.getJobTracker(CNP + QUERY_NAME + "jobTracker");
-            KeyValueSource<String, Ticket> source = KeyValueSource.fromList(ticketList);
+            KeyValueSource<Long, Ticket> source = KeyValueSource.fromMap(ticketMap);
 
-            Job<String, Ticket> job = jobTracker.newJob(source);
+            Job<Long, Ticket> job = jobTracker.newJob(source);
             timeLog.logStartMapReduce();
             Map<String, Integer> result = job
                     .mapper(new Query1Mapper())
@@ -109,7 +98,7 @@ public class Query1Client {
 
             writeQueryResults(arguments.getOutPath(), queryConfig.getQueryOutputFile(), QUERY_RESULT_HEADER, outputLines);
             timeLog.writeTimestamps();
-            ticketList.clear();
+            ticketMap.clear();
         } catch (IOException  e) {
             System.out.println("Error reading CSV files or processing MapReduce job");
         } catch (ExecutionException | InterruptedException e) {

@@ -7,6 +7,7 @@ import com.hazelcast.nio.serialization.DataSerializable;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 public class TicketNYC implements Ticket, DataSerializable {
     private String plate;
@@ -20,6 +21,9 @@ public class TicketNYC implements Ticket, DataSerializable {
     public Ticket createTicket(String[] fields) {
         return new TicketNYC(fields);
     }
+
+
+
     public TicketNYC(String[] fields) {
         this.plate = fields[0];
         this.issueDate = LocalDate.parse(fields[1], DateTimeFormatter.ofPattern("yyyy-MM-dd"));
