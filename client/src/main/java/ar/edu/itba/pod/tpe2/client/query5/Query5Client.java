@@ -71,6 +71,7 @@ public class Query5Client {
             KeyValueSource<String, Ticket> source = KeyValueSource.fromList(ticketList);
 
             // First Job: Calculate Total Amount, Count, and Average Fine for Each Infraction
+            timeLog.logStartMapReduce();
             Job<String, Ticket> job1 = jobTracker.newJob(source);
             Map<String, String> job1Result = job1
                     .mapper(new Query5aMapper())
