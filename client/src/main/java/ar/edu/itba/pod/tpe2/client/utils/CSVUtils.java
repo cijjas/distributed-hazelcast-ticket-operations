@@ -8,10 +8,7 @@ import com.hazelcast.core.*;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -108,15 +105,19 @@ public class CSVUtils {
 
 
 
-    public static void writeQueryResults(Path outPath, String queryOutFile, String CSVHeader,  List<String> outputLines) throws IOException {
+    public static void writeQueryResults(Path outPath, String queryOutFile, String CSVHeader, List<String> outputLines) throws IOException {
         Path realPath = outPath.resolve(queryOutFile);
         try (BufferedWriter writer = Files.newBufferedWriter(realPath, StandardCharsets.UTF_8)) {
             writer.write(CSVHeader);
             writer.newLine();
-            for (String line : outputLines) {
-                writer.write(line);
-                writer.newLine();
-            }
+            outputLines.forEach(line -> {
+                try {
+                    writer.write(line);
+                    writer.newLine();
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            });
         }
     }
 
