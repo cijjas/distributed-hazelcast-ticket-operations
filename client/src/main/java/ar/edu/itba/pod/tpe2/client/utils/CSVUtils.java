@@ -22,7 +22,7 @@ public class CSVUtils {
     private static final String TICKETS = "tickets";
     private static final String CSV_FORMAT = ".csv";
     private static final String SEPARATOR = ";";
-    private static final Integer BATCH_SIZE = 50000;
+    private static final Integer BATCH_SIZE = 20000;
 
     public static void parseInfractions(Path filePath, City city, Map<String, Infraction> infractions) throws IOException {
         Path realPath = filePath.resolve(INFRACTIONS + city.name() + CSV_FORMAT);
@@ -44,6 +44,8 @@ public class CSVUtils {
         CsvParserSettings settings = new CsvParserSettings();
         settings.setHeaderExtractionEnabled(true);
         settings.getFormat().setDelimiter(';');
+        // TODO: for windows only?
+        settings.setLineSeparatorDetectionEnabled(true);
         CsvParser parser = new CsvParser(settings);
 
         try (BufferedReader reader = new BufferedReader(new FileReader(realPath.toFile()), 8192)) {
