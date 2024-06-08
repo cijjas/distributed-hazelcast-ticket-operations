@@ -22,7 +22,6 @@
     <junit5.version>5.9.1</junit5.version>
     <hazelcast.version>3.8.6</hazelcast.version>
     <commons-cli.version>1.8.0</commons-cli.version>
-    <open-csv.version>5.5</open-csv.version>
     <univoity.version>2.9.1</univoity.version>
   </properties>
   <dependencyManagement>
@@ -32,11 +31,7 @@
         <artifactId>univocity-parsers</artifactId>
         <version>${univoity.version}</version>
       </dependency>
-      <dependency>
-        <groupId>com.opencsv</groupId>
-        <artifactId>opencsv</artifactId>
-        <version>${open-csv.version}</version>
-      </dependency>
+
       <dependency>
         <groupId>com.hazelcast</groupId>
         <artifactId>hazelcast-all</artifactId>

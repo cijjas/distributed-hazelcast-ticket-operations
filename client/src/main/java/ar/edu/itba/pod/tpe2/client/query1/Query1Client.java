@@ -19,7 +19,6 @@ import com.hazelcast.map.impl.LegacyAsyncMap;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
-import com.opencsv.CSVReader;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
 
@@ -66,15 +65,13 @@ public class Query1Client {
 
 
         try {
-            // Parse infractions
             Map<String, Infraction> infractions = new ConcurrentHashMap<>();
-            parseInfractions(arguments.getInPath(), city, infractions);
-            // Parse tickets
             IMap<Long, Ticket> ticketMap = hazelcastInstance.getMap(CNP + QUERY_NAME + "ticketMap");
             ticketMap.clear();
 
             timeLog.logStartReading();
-            parseTicketsToMap(arguments.getInPath(), city, hazelcastInstance, ticketMap, ticket -> hasInfraction(ticket, infractions));
+            parseInfractions(arguments.getInPath(), city, infractions);
+            parseTicketsToMap(arguments.getInPath(), city, ticketMap, ticket -> hasInfraction(ticket, infractions));
             timeLog.logEndReading();
 
             JobTracker jobTracker = hazelcastInstance.getJobTracker(CNP + QUERY_NAME + "jobTracker");
@@ -98,12 +95,13 @@ public class Query1Client {
 
             writeQueryResults(arguments.getOutPath(), queryConfig.getQueryOutputFile(), QUERY_RESULT_HEADER, outputLines);
             timeLog.writeTimestamps();
-            ticketMap.clear();
         } catch (IOException  e) {
             System.out.println("Error reading CSV files or processing MapReduce job");
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
+            IMap<Long, Ticket> ticketMap = hazelcastInstance.getMap(CNP + QUERY_NAME + "ticketMap");
+            ticketMap.clear();
             HazelcastClient.shutdownAll();
         }
     }

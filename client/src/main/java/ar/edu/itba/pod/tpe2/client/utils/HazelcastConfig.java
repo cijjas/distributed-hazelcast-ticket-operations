@@ -32,7 +32,7 @@ public class HazelcastConfig {
 
         clientConfig.getSerializationConfig().setAllowUnsafe(true);
         clientConfig.setProperty("hazelcast.client.max.concurrent.invocations", "10000");
-        //clientConfig.setProperty("hazelcast.client.invocation.timeout.seconds", "120");
+        clientConfig.setProperty("hazelcast.client.invocation.timeout.seconds", "120");
 
         return HazelcastClient.newHazelcastClient(clientConfig);
     }

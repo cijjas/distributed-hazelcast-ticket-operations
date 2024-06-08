@@ -13,7 +13,7 @@ public class TicketNYC implements Ticket, DataSerializable {
     private String plate;
     private LocalDate issueDate;
     private String infractionCode;
-    private Double fineAmount;
+    private double fineAmount;
     private String countyName;
     private String issuingAgency;
 
@@ -71,21 +71,27 @@ public class TicketNYC implements Ticket, DataSerializable {
 
     @Override
     public void writeData(ObjectDataOutput objectDataOutput) throws IOException {
+        long dateEpochDay = issueDate.toEpochDay();
+        objectDataOutput.writeLong(dateEpochDay);
         objectDataOutput.writeUTF(plate);
-        objectDataOutput.writeUTF(issueDate.toString());
         objectDataOutput.writeUTF(infractionCode);
+        objectDataOutput.writeUTF(issuingAgency);
         objectDataOutput.writeDouble(fineAmount);
         objectDataOutput.writeUTF(countyName);
-        objectDataOutput.writeUTF(issuingAgency);
     }
 
     @Override
     public void readData(ObjectDataInput objectDataInput) throws IOException {
+        long dateEpochDay = objectDataInput.readLong();
+        issueDate = LocalDate.ofEpochDay(dateEpochDay);
+
         plate = objectDataInput.readUTF();
-        issueDate = LocalDate.parse(objectDataInput.readUTF());
         infractionCode = objectDataInput.readUTF();
+        issuingAgency = objectDataInput.readUTF();
         fineAmount = objectDataInput.readDouble();
         countyName = objectDataInput.readUTF();
-        issuingAgency = objectDataInput.readUTF();
+
     }
+
+
 }

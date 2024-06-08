@@ -16,9 +16,17 @@ public class Query1Collator implements Collator<Map.Entry<String, Integer>, Map<
 
     @Override
     public Map<String, Integer> collate(Iterable<Map.Entry<String, Integer>> values) {
+        Map<String, String> descriptions = new HashMap<>();
+        values.forEach(entry -> {
+            Infraction infraction = infractions.get(entry.getKey());
+            if (infraction != null) {
+                descriptions.put(entry.getKey(), infraction.getDescription());
+            }
+        });
+
         return StreamSupport.stream(values.spliterator(), false)
-                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed()
-                        .thenComparing(entry -> infractions.get(entry.getKey()).getDescription()))
+                .sorted(Comparator.comparing((Map.Entry<String, Integer> entry) -> entry.getValue()).reversed()
+                        .thenComparing(entry -> descriptions.getOrDefault(entry.getKey(), "")))
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         Map.Entry::getValue,

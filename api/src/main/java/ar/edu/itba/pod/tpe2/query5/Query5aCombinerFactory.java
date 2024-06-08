@@ -17,10 +17,8 @@ public class Query5aCombinerFactory implements CombinerFactory<String, String, S
             @Override
             public void combine(String value) {
                 String[] parts = value.split(",");
-                double amount = Double.parseDouble(parts[0]);
-                int cnt = Integer.parseInt(parts[1]);
-                totalAmount += amount;
-                count += cnt;
+                totalAmount += Double.parseDouble(parts[0]);
+                count += Integer.parseInt(parts[1]);
             }
 
             @Override
@@ -30,7 +28,7 @@ public class Query5aCombinerFactory implements CombinerFactory<String, String, S
 
             @Override
             public void reset() {
-                totalAmount = 0;
+                totalAmount = 0.0;
                 count = 0;
             }
         };

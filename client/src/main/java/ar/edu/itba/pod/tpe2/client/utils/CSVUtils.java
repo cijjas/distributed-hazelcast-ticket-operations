@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -21,7 +22,7 @@ public class CSVUtils {
     private static final String TICKETS = "tickets";
     private static final String CSV_FORMAT = ".csv";
     private static final String SEPARATOR = ";";
-    private static final Integer BATCH_SIZE = 20000;
+    private static final Integer BATCH_SIZE = 50000;
 
     public static void parseInfractions(Path filePath, City city, Map<String, Infraction> infractions) throws IOException {
         Path realPath = filePath.resolve(INFRACTIONS + city.name() + CSV_FORMAT);
@@ -34,51 +35,44 @@ public class CSVUtils {
         }
     }
 
-    public static void parseTicketsToMap(Path filePath, City city, HazelcastInstance hazelcastInstance,
-                                         IMap<Long, Ticket> ticketMap, Predicate<Ticket> shouldAddToBatch) throws IOException {
+    public static void parseTicketsToMap(Path filePath, City city, IMap<Long, Ticket> ticketMap, Predicate<Ticket> shouldAddToBatch) throws IOException {
         Path realPath = filePath.resolve("tickets" + city + ".csv");
         Ticket ticketAdapter = TicketAdapterFactory.getAdapter(city);
         int batchSize = BATCH_SIZE;
-        IdGenerator idGenerator = hazelcastInstance.getIdGenerator("ticketIdGenerator");
-        Map<Long, Ticket> batchMap = new HashMap<>(batchSize);
-
-        // Configure the CSV parser
+        long id = 0;
+        Map<Long, Ticket> batchMap = new ConcurrentHashMap<>(batchSize);
         CsvParserSettings settings = new CsvParserSettings();
-        settings.setHeaderExtractionEnabled(true);  // Extract headers
-        settings.getFormat().setDelimiter(';');     // Set delimiter
-
-        // Create a parser instance
+        settings.setHeaderExtractionEnabled(true);
+        settings.getFormat().setDelimiter(';');
         CsvParser parser = new CsvParser(settings);
 
-        // Parse the CSV file
-        try (FileReader reader = new FileReader(realPath.toFile())) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(realPath.toFile()), 8192)) {
             parser.beginParsing(reader);
 
             com.univocity.parsers.common.record.Record record;
             while ((record = parser.parseNextRecord()) != null) {
-
                 Ticket ticket = ticketAdapter.createTicket(record.getValues());
-                if (shouldAddToBatch.test(ticket)) {
-                    long id = idGenerator.newId();
-                    batchMap.put(id, ticket);
-                    if (batchMap.size() >= batchSize) {
-                        ticketMap.putAll(batchMap);
-                        batchMap.clear();
-                    }
+                if (!shouldAddToBatch.test(ticket)) {
+                    continue;
+                }
+                id++;
+                batchMap.put(id, ticket);
+                if (batchMap.size() >= batchSize) {
+                    ticketMap.putAll(batchMap);
+                    batchMap.clear();
                 }
             }
 
-            // Insert any remaining tickets in the batchMap
             if (!batchMap.isEmpty()) {
                 ticketMap.putAll(batchMap);
             }
-
         } catch (IOException e) {
             throw new RuntimeException("Error reading CSV file", e);
         }
     }
 
-    public static void parseTickets(Path filePath, City city, IList<Ticket> ticketList, Predicate<Ticket> shouldAddToBatch) throws IOException {
+
+        public static void parseTickets(Path filePath, City city, IList<Ticket> ticketList, Predicate<Ticket> shouldAddToBatch) throws IOException {
         Path realPath = filePath.resolve(TICKETS + city + CSV_FORMAT);
         Ticket ticketAdapter = TicketAdapterFactory.getAdapter(city);
 

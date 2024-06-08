@@ -18,23 +18,26 @@ public class Query3Collator implements Collator<Map.Entry<String, Double>, Map<S
 
     @Override
     public Map<String, String> collate(Iterable<Map.Entry<String, Double>> values) {
-        double total = StreamSupport.stream(values.spliterator(), false)
+        // Convert iterable to list to avoid multiple stream passes
+        List<Map.Entry<String, Double>> entries = StreamSupport.stream(values.spliterator(), false)
+                .toList();
+
+        double total = entries.stream()
                 .mapToDouble(Map.Entry::getValue)
                 .sum();
 
-        return StreamSupport.stream(values.spliterator(), false)
-                .map(entry -> {
-                    BigDecimal percentage = new BigDecimal(entry.getValue() / total * 100)
-                            .setScale(2, RoundingMode.DOWN);
-                    return new HashMap.SimpleEntry<>(entry.getKey(), percentage);
-                })
-                .sorted(Map.Entry.<String, BigDecimal>comparingByValue()
+        return entries.stream()
+                .map(entry -> new AbstractMap.SimpleEntry<>(
+                        entry.getKey(),
+                        new BigDecimal(entry.getValue() / total * 100).setScale(2, RoundingMode.HALF_DOWN) + "%"
+                ))
+                .sorted(Comparator.comparing((Map.Entry<String, String> entry) -> new BigDecimal(entry.getValue().replace("%", "")))
                         .reversed()
                         .thenComparing(Map.Entry::getKey))
                 .limit(limit)
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        entry -> entry.getValue().toString() + "%",
+                        Map.Entry::getValue,
                         (e1, e2) -> e1,
                         LinkedHashMap::new
                 ));

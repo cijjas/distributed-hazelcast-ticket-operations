@@ -14,7 +14,7 @@ public class TicketCHI implements Ticket, DataSerializable {
     private String licensePlateNumber;
     private String violationCode;
     private String unitDescription;
-    private Double fineLevel1Amount;
+    private double fineLevel1Amount;
     private String communityAreaName;
 
     @Override
@@ -69,7 +69,8 @@ public class TicketCHI implements Ticket, DataSerializable {
 
     @Override
     public void writeData(ObjectDataOutput objectDataOutput) throws IOException {
-        objectDataOutput.writeUTF(issueDate.toString());
+        long dateEpochDay = issueDate.toEpochDay();
+        objectDataOutput.writeLong(dateEpochDay);
         objectDataOutput.writeUTF(licensePlateNumber);
         objectDataOutput.writeUTF(violationCode);
         objectDataOutput.writeUTF(unitDescription);
@@ -79,7 +80,8 @@ public class TicketCHI implements Ticket, DataSerializable {
 
     @Override
     public void readData(ObjectDataInput objectDataInput) throws IOException {
-        issueDate = LocalDate.parse(objectDataInput.readUTF());
+        long dateEpochDay = objectDataInput.readLong();
+        issueDate = LocalDate.ofEpochDay(dateEpochDay);
         licensePlateNumber = objectDataInput.readUTF();
         violationCode = objectDataInput.readUTF();
         unitDescription = objectDataInput.readUTF();

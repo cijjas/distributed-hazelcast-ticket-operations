@@ -8,22 +8,19 @@ public class Query5aReducerFactory implements ReducerFactory<String, String, Str
     @Override
     public Reducer<String, String> newReducer(String key) {
         return new Reducer<>() {
-            private double totalAmount = 0;
+            private double totalAmount = 0.0;
             private int count = 0;
 
             @Override
             public void reduce(String value) {
                 String[] parts = value.split(",");
-                double amount = Double.parseDouble(parts[0]);
-                int cnt = Integer.parseInt(parts[1]);
-                totalAmount += amount;
-                count += cnt;
+                totalAmount += Double.parseDouble(parts[0]);
+                count += Integer.parseInt(parts[1]);
             }
 
             @Override
             public String finalizeReduce() {
-                double average = totalAmount / count;
-                return key + ";" + average;
+                return key + ";" +  totalAmount / count;
             }
         };
     }

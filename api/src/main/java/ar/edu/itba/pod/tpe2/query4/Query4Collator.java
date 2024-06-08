@@ -14,10 +14,16 @@ public class Query4Collator implements Collator<Map.Entry<String, Map<String, In
             String countyName = entry.getKey();
             Map<String, Integer> licenseMap = entry.getValue();
 
-            licenseMap.entrySet().stream()
-                    .max(Map.Entry.comparingByValue())
-                    .ifPresent(maxEntry -> result.put(countyName, maxEntry));
+            Map.Entry<String, Integer> maxEntry = null;
+            for (Map.Entry<String, Integer> licenseEntry : licenseMap.entrySet()) {
+                if (maxEntry == null || licenseEntry.getValue().compareTo(maxEntry.getValue()) > 0) {
+                    maxEntry = licenseEntry;
+                }
+            }
 
+            if (maxEntry != null) {
+                result.put(countyName, maxEntry);
+            }
         }
 
         return result;
