@@ -1,112 +1,80 @@
 package ar.edu.itba.pod.tpe2.client.query2;
 
-import ar.edu.itba.pod.tpe2.client.utils.HazelcastConfig;
-import ar.edu.itba.pod.tpe2.client.utils.QueryConfig;
-import ar.edu.itba.pod.tpe2.client.utils.TimestampLogger;
+import ar.edu.itba.pod.tpe2.client.BaseTicketClient;
 import ar.edu.itba.pod.tpe2.client.utils.parsing.BaseArguments;
-import ar.edu.itba.pod.tpe2.client.utils.parsing.QueryParser;
-import ar.edu.itba.pod.tpe2.client.utils.parsing.QueryParserFactory;
 import ar.edu.itba.pod.tpe2.models.City;
 import ar.edu.itba.pod.tpe2.models.infraction.Infraction;
 import ar.edu.itba.pod.tpe2.models.ticket.adapters.Ticket;
-import ar.edu.itba.pod.tpe2.query2.*;
-import com.hazelcast.client.HazelcastClient;
+import ar.edu.itba.pod.tpe2.query2.Query2Collator;
+import ar.edu.itba.pod.tpe2.query2.Query2CombinerFactory;
+import ar.edu.itba.pod.tpe2.query2.Query2Mapper;
+import ar.edu.itba.pod.tpe2.query2.Query2ReducerFactory;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IList;
+import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Job;
-import com.hazelcast.mapreduce.JobTracker;
-import com.hazelcast.mapreduce.KeyValueSource;
-import org.apache.commons.cli.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
-import static ar.edu.itba.pod.tpe2.client.utils.CSVUtils.*;
+import static ar.edu.itba.pod.tpe2.client.utils.CSVUtils.parseInfractions;
+import static ar.edu.itba.pod.tpe2.client.utils.CSVUtils.parseTicketsToMap;
 
-public class Query2Client {
+public class Query2Client extends BaseTicketClient<BaseArguments, List<String>> {
+    private final Map<String, Infraction> infractions;
 
-    private static final Logger logger = LoggerFactory.getLogger(Query2Client.class);
-
-    private static final String QUERY_NAME = "query2";
-    private static final String QUERY_RESULT_HEADER = "County;InfractionTop1;InfractionTop2;InfractionTop3";
-    private static final String CNP = "g7-"; // Cluster Name Prefix
-    private static final String TIME_OUTPUT_FILE = "time2.txt";
-    private static final String QUERY_OUTPUT_FILE = QUERY_NAME + ".csv";
-
-    public static void main(String[] args) {
-
-        QueryParser parser = QueryParserFactory.getParser(QUERY_NAME);
-
-        BaseArguments arguments;
-        try{
-            arguments = parser.getArguments(args);
-        } catch (ParseException e) {
-            System.out.println(e.getMessage());
-            return;
-        }
-
-        QueryConfig queryConfig = new QueryConfig(QUERY_OUTPUT_FILE, TIME_OUTPUT_FILE);
-        City city = arguments.getCity();
-
-        // Hazelcast client Config
-        HazelcastInstance hazelcastInstance = HazelcastConfig.configureHazelcastClient(arguments);
-        TimestampLogger timeLog = new TimestampLogger(arguments.getOutPath(), queryConfig.getTimeOutputFile());
-
-
-        try {
-            timeLog.logStartReading();
-            // Parse infractions
-            Map<String, Infraction> infractions = new ConcurrentHashMap<>();
-            parseInfractions(arguments.getInPath(), city, infractions);
-
-            // Parse tickets
-            IList<Ticket> ticketList = hazelcastInstance.getList(CNP + QUERY_NAME + "ticketList");
-            ticketList.clear();
-            parseTickets(arguments.getInPath(), city, ticketList, ticket -> hasInfraction(ticket, infractions));
-
-            timeLog.logEndReading();
-
-
-            JobTracker jobTracker = hazelcastInstance.getJobTracker(CNP + QUERY_NAME + "jobTracker");
-            KeyValueSource<String, Ticket> source = KeyValueSource.fromList(ticketList);
-
-            Job<String, Ticket> job = jobTracker.newJob(source);
-            timeLog.logStartMapReduce();
-
-            Map<String, List<String>> result = job
-                    .mapper(new Query2Mapper())
-                    .combiner(new Query2CombinerFactory())
-                    .reducer(new Query2ReducerFactory())
-                    .submit(new Query2Collator(infractions))
-                    .get();
-            timeLog.logEndMapReduce();
-
-            List<String> output = result.entrySet()
-                    .stream()
-                    .map(entry -> entry.getKey() + ";" + String.join(";", entry.getValue()))
-                    .toList();
-
-
-            writeQueryResults(arguments.getOutPath(),  queryConfig.getQueryOutputFile(), QUERY_RESULT_HEADER, output);
-            timeLog.writeTimestamps();
-
-        } catch (IOException e) {
-            logger.error("Error processing MapReduce job", e);
-        } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            IList<Ticket> ticketList = hazelcastInstance.getList(CNP + "ticketList");
-            ticketList.clear();
-            HazelcastClient.shutdownAll();
-        }
+    public Query2Client() {
+        this.infractions = new ConcurrentHashMap<>();
     }
 
-    public static boolean hasInfraction(Ticket ticket, Map<String, Infraction> infractions) {
+    public static void main(String[] args) {
+        new Query2Client().run(args);
+    }
+
+    @Override
+    protected String getQueryName() {
+        return "query2";
+    }
+
+    @Override
+    protected String getTimeOutputFile() {
+        return "time2.txt";
+    }
+
+    @Override
+    protected String getQueryResultHeader() {
+        return "County;InfractionTop1;InfractionTop2;InfractionTop3";
+    }
+
+    @Override
+    protected void parseData(Path inPath, City city, HazelcastInstance hazelcastInstance, IMap<Long, Ticket> ticketMap) throws IOException {
+        parseInfractions(inPath, city, infractions);
+        parseTicketsToMap(inPath, city, hazelcastInstance, ticketMap, ticket -> hasInfraction(ticket, infractions));
+    }
+
+    @Override
+    protected Map<String, List<String>> mapReduce(Job<Long, Ticket> job) throws InterruptedException, ExecutionException {
+        return job
+                .mapper(new Query2Mapper())
+                .combiner(new Query2CombinerFactory())
+                .reducer(new Query2ReducerFactory())
+                .submit(new Query2Collator(infractions))
+                .get();
+    }
+
+    @Override
+    protected List<String> generateOutputFromResults(Map<String, List<String>> result) {
+        return result
+                .entrySet()
+                .stream()
+                .map(entry -> entry.getKey() + ";" + String.join(";", entry.getValue()))
+                .toList();
+    }
+
+    private static boolean hasInfraction(Ticket ticket, Map<String, Infraction> infractions) {
         return infractions.containsKey(ticket.getInfractionCode());
     }
 }

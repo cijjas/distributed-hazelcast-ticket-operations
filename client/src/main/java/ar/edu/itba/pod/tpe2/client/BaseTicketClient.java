@@ -25,7 +25,7 @@ import java.util.concurrent.ExecutionException;
 
 import static ar.edu.itba.pod.tpe2.client.utils.CSVUtils.*;
 
-public abstract class BaseTicketClient<T extends BaseArguments> {
+public abstract class BaseTicketClient<T extends BaseArguments, K> {
     private static final String CNP = "g7-"; // Cluster Name Prefix
     protected abstract String getQueryName();
     protected String getQueryOutputFile() {
@@ -40,12 +40,12 @@ public abstract class BaseTicketClient<T extends BaseArguments> {
     protected abstract String getTimeOutputFile();
     protected abstract String getQueryResultHeader();
     protected abstract void parseData(Path inPath, City city, HazelcastInstance hazelcastInstance, IMap<Long, Ticket> ticketMap) throws IOException;
-    protected abstract Map<String, Integer> mapReduce(Job<Long, Ticket> job) throws InterruptedException, ExecutionException;
-    protected abstract List<String> generateOutputFromResults(Map<String, Integer> result);
+    protected abstract Map<String, K> mapReduce(Job<Long, Ticket> job) throws InterruptedException, ExecutionException;
+    protected abstract List<String> generateOutputFromResults(Map<String, K> result);
+    protected T arguments;
     protected void run(String[] args) {
         QueryParser parser = QueryParserFactory.getParser(getQueryName());
 
-        T arguments;
         try {
             arguments = (T) parser.getArguments(args);
         } catch (ParseException e) {
@@ -73,7 +73,7 @@ public abstract class BaseTicketClient<T extends BaseArguments> {
             Job<Long, Ticket> job = jobTracker.newJob(source);
 
             timeLog.logStartMapReduce();
-            Map<String, Integer> result = mapReduce(job);
+            Map<String, K> result = mapReduce(job);
             timeLog.logEndMapReduce();
 
             List<String> outputLines = generateOutputFromResults(result);
