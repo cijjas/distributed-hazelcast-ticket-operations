@@ -20,31 +20,26 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 import static ar.edu.itba.pod.tpe2.client.utils.CSVUtils.*;
 
 public abstract class BaseTicketClient<T extends BaseArguments, K> {
     private static final String CNP = "g7-"; // Cluster Name Prefix
-    protected abstract String getQueryName();
-    protected String getQueryOutputFile() {
-        return getQueryName() + ".csv";
-    }
+    protected abstract QueryConfigEnum getQueryConfig();
     protected String getTicketMapName() {
-        return CNP + getQueryName() + "ticketMap";
+        return CNP + getQueryConfig().getQueryName() + "ticketMap";
     }
     protected String getJobTrackerName() {
-        return CNP + getQueryName() + "jobTracker";
+        return CNP + getQueryConfig().getQueryName() + "jobTracker";
     }
-    protected abstract String getTimeOutputFile();
-    protected abstract String getQueryResultHeader();
     protected abstract void parseData(Path inPath, City city, HazelcastInstance hazelcastInstance, IMap<Long, Ticket> ticketMap) throws IOException;
     protected abstract Map<String, K> mapReduce(Job<Long, Ticket> job) throws InterruptedException, ExecutionException;
     protected abstract List<String> generateOutputFromResults(Map<String, K> result);
     protected T arguments;
     protected void run(String[] args) {
-        QueryParser parser = QueryParserFactory.getParser(getQueryName());
+        QueryConfigEnum query = getQueryConfig();
+        QueryParser parser = QueryParserFactory.getParser(query.getQueryName());
 
         try {
             arguments = (T) parser.getArguments(args);
@@ -53,7 +48,7 @@ public abstract class BaseTicketClient<T extends BaseArguments, K> {
             return;
         }
 
-        QueryConfig queryConfig = new QueryConfig(getQueryOutputFile(), getTimeOutputFile());
+        QueryConfig queryConfig = new QueryConfig(query.getQueryOutputFile(), query.getTimeOutputFile());
         City city = arguments.getCity();
 
         // Hazelcast client Config
@@ -69,7 +64,7 @@ public abstract class BaseTicketClient<T extends BaseArguments, K> {
             timeLog.logEndReading();
 
             JobTracker jobTracker = hazelcastInstance.getJobTracker(getJobTrackerName());
-            KeyValueSource<Long, Ticket> source = KeyValueSource.fromMap(ticketIMap);;
+            KeyValueSource<Long, Ticket> source = KeyValueSource.fromMap(ticketIMap);
             Job<Long, Ticket> job = jobTracker.newJob(source);
 
             timeLog.logStartMapReduce();
@@ -77,7 +72,7 @@ public abstract class BaseTicketClient<T extends BaseArguments, K> {
             timeLog.logEndMapReduce();
 
             List<String> outputLines = generateOutputFromResults(result);
-            writeQueryResults(arguments.getOutPath(), queryConfig.getQueryOutputFile(), getQueryResultHeader(), outputLines);
+            writeQueryResults(arguments.getOutPath(), queryConfig.getQueryOutputFile(), query.getResultHeader(), outputLines);
 
             timeLog.writeTimestamps();
         } catch (IOException e) {

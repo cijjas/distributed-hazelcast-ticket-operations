@@ -1,6 +1,7 @@
 package ar.edu.itba.pod.tpe2.client.query1;
 
 import ar.edu.itba.pod.tpe2.client.BaseTicketClient;
+import ar.edu.itba.pod.tpe2.client.QueryConfigEnum;
 import ar.edu.itba.pod.tpe2.client.utils.parsing.BaseArguments;
 import ar.edu.itba.pod.tpe2.models.City;
 import ar.edu.itba.pod.tpe2.models.infraction.Infraction;
@@ -35,18 +36,8 @@ public class Query1Client extends BaseTicketClient<BaseArguments, Integer> {
     }
 
     @Override
-    protected String getQueryName() {
-        return "query1";
-    }
-
-    @Override
-    protected String getTimeOutputFile() {
-        return "time1.txt";
-    }
-
-    @Override
-    protected String getQueryResultHeader() {
-        return "Infraction;Tickets";
+    protected QueryConfigEnum getQueryConfig() {
+        return QueryConfigEnum.QUERY1;
     }
 
     @Override

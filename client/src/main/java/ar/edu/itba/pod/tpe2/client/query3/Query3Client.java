@@ -1,6 +1,7 @@
 package ar.edu.itba.pod.tpe2.client.query3;
 
 import ar.edu.itba.pod.tpe2.client.BaseTicketClient;
+import ar.edu.itba.pod.tpe2.client.QueryConfigEnum;
 import ar.edu.itba.pod.tpe2.models.City;
 import ar.edu.itba.pod.tpe2.models.ticket.adapters.Ticket;
 import ar.edu.itba.pod.tpe2.query3.Query3Collator;
@@ -26,18 +27,8 @@ public class Query3Client extends BaseTicketClient<Query3Arguments, String> {
     }
 
     @Override
-    protected String getQueryName() {
-        return "query3";
-    }
-
-    @Override
-    protected String getTimeOutputFile() {
-        return "time3.txt";
-    }
-
-    @Override
-    protected String getQueryResultHeader() {
-        return "Issuing Agency;Percentage";
+    protected QueryConfigEnum getQueryConfig() {
+        return QueryConfigEnum.QUERY3;
     }
 
     @Override
