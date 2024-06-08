@@ -46,6 +46,8 @@ public class CSVUtils {
         CsvParserSettings settings = new CsvParserSettings();
         settings.setHeaderExtractionEnabled(true);  // Extract headers
         settings.getFormat().setDelimiter(';');     // Set delimiter
+        // TODO: for windows only?
+        settings.setLineSeparatorDetectionEnabled(true);
 
         // Create a parser instance
         CsvParser parser = new CsvParser(settings);
