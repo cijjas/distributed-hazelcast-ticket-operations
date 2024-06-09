@@ -1,102 +1,56 @@
 package ar.edu.itba.pod.tpe2.client.query3;
 
-import ar.edu.itba.pod.tpe2.client.query2.Query2Client;
-import ar.edu.itba.pod.tpe2.client.utils.HazelcastConfig;
-import ar.edu.itba.pod.tpe2.client.utils.QueryConfig;
-import ar.edu.itba.pod.tpe2.client.utils.TimestampLogger;
-import ar.edu.itba.pod.tpe2.client.utils.parsing.QueryParser;
-import ar.edu.itba.pod.tpe2.client.utils.parsing.QueryParserFactory;
+import ar.edu.itba.pod.tpe2.client.BaseTicketClient;
+import ar.edu.itba.pod.tpe2.client.utils.QueryConfigEnum;
 import ar.edu.itba.pod.tpe2.models.City;
-import ar.edu.itba.pod.tpe2.models.infraction.Infraction;
 import ar.edu.itba.pod.tpe2.models.ticket.adapters.Ticket;
 import ar.edu.itba.pod.tpe2.query3.Query3Collator;
 import ar.edu.itba.pod.tpe2.query3.Query3CombinerFactory;
 import ar.edu.itba.pod.tpe2.query3.Query3Mapper;
 import ar.edu.itba.pod.tpe2.query3.Query3ReducerFactory;
-import com.hazelcast.client.HazelcastClient;
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IList;
+import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Job;
-import com.hazelcast.mapreduce.JobTracker;
-import com.hazelcast.mapreduce.KeyValueSource;
-import org.apache.commons.cli.ParseException;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
-import static ar.edu.itba.pod.tpe2.client.utils.CSVUtils.*;
+import static ar.edu.itba.pod.tpe2.client.utils.CSVUtils.parseTicketsToMap;
 
-public class Query3Client {
+public class Query3Client extends BaseTicketClient<Query3Arguments, Map<String, String>> {
 
-    private static final String QUERY_NAME = "query3";
-    private static final String QUERY_RESULT_HEADER = "Issuing Agency;Percentage";
-    private static final String CNP = "g7-"; // Cluster Name Prefix
-    private static final String TIME_OUTPUT_FILE = "time3.txt";
-    private static final String QUERY_OUTPUT_FILE = "query3.csv";
     public static void main(String[] args) {
-
-        QueryParser parser = QueryParserFactory.getParser(QUERY_NAME);
-
-        Query3Arguments arguments;
-        try {
-            arguments = (Query3Arguments) parser.getArguments(args);
-        } catch (ParseException e) {
-            System.out.println(e.getMessage());
-            return;
-        }
-
-        QueryConfig queryConfig = new QueryConfig(QUERY_OUTPUT_FILE, TIME_OUTPUT_FILE);
-        City city = arguments.getCity();
-
-        // Hazelcast client Config
-        HazelcastInstance hazelcastInstance = HazelcastConfig.configureHazelcastClient(arguments);
-        TimestampLogger timeLog = new TimestampLogger(arguments.getOutPath(), queryConfig.getTimeOutputFile(), Query2Client.class.getSimpleName());
-
-        try {
-            timeLog.logStartReading();
-            // Parse infractions
-            Map<String, Infraction> infractions = new ConcurrentHashMap<>();
-            parseInfractions(arguments.getInPath(), city, infractions);
-
-            // Parse tickets
-            IList<Ticket> ticketList = hazelcastInstance.getList(CNP + QUERY_NAME + "ticketList");
-            ticketList.clear();
-            parseTickets(arguments.getInPath(), city, ticketList, ticket -> true);
-
-            timeLog.logEndReading();
-
-            JobTracker jobTracker = hazelcastInstance.getJobTracker(CNP + QUERY_NAME + "jobTracker");
-            KeyValueSource<String, Ticket> source = KeyValueSource.fromList(ticketList);
-
-            Job<String, Ticket> job = jobTracker.newJob(source);
-            timeLog.logStartMapReduce();
-            Map<String, String> result = job
-                    .mapper(new Query3Mapper())
-                    .combiner(new Query3CombinerFactory())
-                    .reducer(new Query3ReducerFactory())
-                    .submit(new Query3Collator(arguments.getN()))
-                    .get();
-            timeLog.logEndMapReduce();
-
-            List<String> outputLines = result
-                    .entrySet()
-                    .stream()
-                    .map(entry -> entry.getKey() + ";" + entry.getValue())
-                    .toList();
-
-            writeQueryResults(arguments.getOutPath(), queryConfig.getQueryOutputFile(), QUERY_RESULT_HEADER, outputLines);
-            timeLog.writeTimestamps();
-        } catch (IOException e) {
-            System.out.println("Error reading CSV files or processing MapReduce job");
-        } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-
-            HazelcastClient.shutdownAll();
-        }
+        new Query3Client().run(args);
     }
 
+    @Override
+    protected QueryConfigEnum getQueryConfig() {
+        return QueryConfigEnum.QUERY3;
+    }
+
+    @Override
+    protected void parseData(Path inPath, City city, IMap<Long, Ticket> ticketMap) throws IOException {
+        parseTicketsToMap(inPath, city, ticketMap, ticket -> true);
+    }
+
+    @Override
+    protected Map<String, String> mapReduce(Job<Long, Ticket> job) throws InterruptedException, ExecutionException {
+        return job
+                .mapper(new Query3Mapper())
+                .combiner(new Query3CombinerFactory())
+                .reducer(new Query3ReducerFactory())
+                .submit(new Query3Collator(arguments.getN()))
+                .get();
+    }
+
+    @Override
+    protected List<String> generateOutputFromResults(Map<String, String> result) {
+        return result
+                .entrySet()
+                .stream()
+                .map(entry -> entry.getKey() + ";" + entry.getValue())
+                .toList();
+    }
 }

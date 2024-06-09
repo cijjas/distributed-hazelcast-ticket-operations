@@ -1,4 +1,4 @@
-package ar.edu.itba.pod.tpe2.client.utils.parsing;
+package ar.edu.itba.pod.tpe2.client.utils.cli_parsing;
 
 import ar.edu.itba.pod.tpe2.client.query4.Query4Parser;
 import ar.edu.itba.pod.tpe2.client.query3.Query3Parser;

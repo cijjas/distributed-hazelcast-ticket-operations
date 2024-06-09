@@ -1,10 +1,9 @@
 package ar.edu.itba.pod.tpe2.client.query4;
 
-import ar.edu.itba.pod.tpe2.client.utils.parsing.BaseArguments;
-import ar.edu.itba.pod.tpe2.client.utils.parsing.BaseParser;
+import ar.edu.itba.pod.tpe2.client.utils.cli_parsing.BaseArguments;
+import ar.edu.itba.pod.tpe2.client.utils.cli_parsing.BaseParser;
 import lombok.Getter;
 import org.apache.commons.cli.*;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -29,7 +28,6 @@ public class Query4Parser extends BaseParser {
     @Override
     public void parse(CommandLine cmd) throws ParseException {
         super.parse(cmd);
-        System.out.println("Q4 is parsing!");
         parseCustomArguments(cmd);
     }
 

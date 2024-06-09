@@ -1,7 +1,8 @@
 package ar.edu.itba.pod.tpe2.client.query1;
 
 import ar.edu.itba.pod.tpe2.client.BaseTicketClient;
-import ar.edu.itba.pod.tpe2.client.utils.parsing.BaseArguments;
+import ar.edu.itba.pod.tpe2.client.utils.QueryConfigEnum;
+import ar.edu.itba.pod.tpe2.client.utils.cli_parsing.BaseArguments;
 import ar.edu.itba.pod.tpe2.models.City;
 import ar.edu.itba.pod.tpe2.models.infraction.Infraction;
 import ar.edu.itba.pod.tpe2.models.ticket.adapters.Ticket;
@@ -9,11 +10,8 @@ import ar.edu.itba.pod.tpe2.query1.Query1Collator;
 import ar.edu.itba.pod.tpe2.query1.Query1CombinerFactory;
 import ar.edu.itba.pod.tpe2.query1.Query1Mapper;
 import ar.edu.itba.pod.tpe2.query1.Query1ReducerFactory;
-import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Job;
-import lombok.Getter;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -24,12 +22,8 @@ import java.util.concurrent.ExecutionException;
 import static ar.edu.itba.pod.tpe2.client.utils.CSVUtils.parseInfractions;
 import static ar.edu.itba.pod.tpe2.client.utils.CSVUtils.parseTicketsToMap;
 
-@Getter
-public class Query1Client extends BaseTicketClient<BaseArguments> {
+public class Query1Client extends BaseTicketClient<BaseArguments, Map<String, Integer>> {
     private final Map<String, Infraction> infractions;
-    protected final String queryName = "query1";
-    protected final String timeOutputFile = "time1.txt";
-    protected final String queryResultHeader = "Infraction;Tickets";
 
     public Query1Client() {
         this.infractions = new ConcurrentHashMap<>();
@@ -37,6 +31,11 @@ public class Query1Client extends BaseTicketClient<BaseArguments> {
 
     public static void main(String[] args) {
         new Query1Client().run(args);
+    }
+
+    @Override
+    protected QueryConfigEnum getQueryConfig() {
+        return QueryConfigEnum.QUERY1;
     }
 
     @Override

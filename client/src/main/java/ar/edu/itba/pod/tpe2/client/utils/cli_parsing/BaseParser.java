@@ -1,10 +1,9 @@
-package ar.edu.itba.pod.tpe2.client.utils.parsing;
+package ar.edu.itba.pod.tpe2.client.utils.cli_parsing;
 
 
 import ar.edu.itba.pod.tpe2.models.City;
 import lombok.Getter;
 import org.apache.commons.cli.*;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;

@@ -1,6 +1,6 @@
 package ar.edu.itba.pod.tpe2.client.query4;
 
-import ar.edu.itba.pod.tpe2.client.utils.parsing.BaseArguments;
+import ar.edu.itba.pod.tpe2.client.utils.cli_parsing.BaseArguments;
 import ar.edu.itba.pod.tpe2.models.City;
 import lombok.Getter;
 

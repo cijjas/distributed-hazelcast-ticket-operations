@@ -1,6 +1,6 @@
 package ar.edu.itba.pod.tpe2.client.utils;
 
-import ar.edu.itba.pod.tpe2.client.utils.parsing.BaseArguments;
+import ar.edu.itba.pod.tpe2.client.utils.cli_parsing.BaseArguments;
 import ar.edu.itba.pod.tpe2.models.ticket.services.TicketFactory;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;

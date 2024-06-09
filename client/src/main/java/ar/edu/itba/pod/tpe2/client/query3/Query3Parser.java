@@ -1,8 +1,8 @@
 package ar.edu.itba.pod.tpe2.client.query3;
 
 
-import ar.edu.itba.pod.tpe2.client.utils.parsing.BaseArguments;
-import ar.edu.itba.pod.tpe2.client.utils.parsing.BaseParser;
+import ar.edu.itba.pod.tpe2.client.utils.cli_parsing.BaseArguments;
+import ar.edu.itba.pod.tpe2.client.utils.cli_parsing.BaseParser;
 import lombok.Getter;
 import org.apache.commons.cli.*;
 
