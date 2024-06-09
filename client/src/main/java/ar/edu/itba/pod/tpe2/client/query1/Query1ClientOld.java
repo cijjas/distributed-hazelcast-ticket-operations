@@ -61,7 +61,7 @@ public class Query1ClientOld {
 
         // Hazelcast client Config
         HazelcastInstance hazelcastInstance = HazelcastConfig.configureHazelcastClient(arguments);
-        TimestampLogger timeLog = new TimestampLogger(arguments.getOutPath(), queryConfig.getTimeOutputFile());
+        TimestampLogger timeLog = new TimestampLogger(arguments.getOutPath(), queryConfig.getTimeOutputFile(), Query1ClientOld.class.getSimpleName());
 
 
         try {

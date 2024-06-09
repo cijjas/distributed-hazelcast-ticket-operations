@@ -9,11 +9,15 @@ import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -23,6 +27,7 @@ public class CSVUtils {
     private static final String CSV_FORMAT = ".csv";
     private static final String SEPARATOR = ";";
     private static final Integer BATCH_SIZE = 20000;
+    private static final int EIGHT_KB = 8192;
 
     public static void parseInfractions(Path filePath, City city, Map<String, Infraction> infractions) throws IOException {
         Path realPath = filePath.resolve(INFRACTIONS + city.name() + CSV_FORMAT);
@@ -41,53 +46,56 @@ public class CSVUtils {
         int batchSize = BATCH_SIZE;
         long id = 0;
         Map<Long, Ticket> batchMap = new ConcurrentHashMap<>(batchSize);
+
         CsvParserSettings settings = new CsvParserSettings();
         settings.setHeaderExtractionEnabled(true);
         settings.getFormat().setDelimiter(';');
-        // TODO: for windows only?
-        settings.setLineSeparatorDetectionEnabled(true);
-        CsvParser parser = new CsvParser(settings);
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(realPath.toFile()), 8192)) {
+        ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(realPath.toFile()), EIGHT_KB)) {
+            CsvParser parser = new CsvParser(settings);
             parser.beginParsing(reader);
 
-            com.univocity.parsers.common.record.Record record;
-            while ((record = parser.parseNextRecord()) != null) {
-                Ticket ticket = ticketAdapter.createTicket(record.getValues());
+            String[] row;
+            while ((row = parser.parseNext()) != null) {
+                Ticket ticket = ticketAdapter.createTicket(row);
                 if (!shouldAddToBatch.test(ticket)) {
                     continue;
                 }
-                id++;
-                batchMap.put(id, ticket);
+                batchMap.put(id++, ticket);
                 if (batchMap.size() >= batchSize) {
-                    ticketMap.putAll(batchMap);
+                    Map<Long, Ticket> batchToPut = new ConcurrentHashMap<>(batchMap);
                     batchMap.clear();
+                    CompletableFuture.runAsync(() -> ticketMap.putAll(batchToPut), executorService);
                 }
             }
 
             if (!batchMap.isEmpty()) {
-                ticketMap.putAll(batchMap);
+                CompletableFuture.runAsync(() -> ticketMap.putAll(new ConcurrentHashMap<>(batchMap)), executorService);
             }
         } catch (IOException e) {
             throw new RuntimeException("Error reading CSV file", e);
+        } finally {
+            executorService.shutdown();
         }
     }
 
 
-        public static void parseTickets(Path filePath, City city, IList<Ticket> ticketList, Predicate<Ticket> shouldAddToBatch) throws IOException {
+    public static void parseTickets(Path filePath, City city, IList<Ticket> ticketList, Predicate<Ticket> shouldAddToBatch) throws IOException {
         Path realPath = filePath.resolve(TICKETS + city + CSV_FORMAT);
         Ticket ticketAdapter = TicketAdapterFactory.getAdapter(city);
 
         try (BufferedReader br = Files.newBufferedReader(realPath)) {
             String line;
-            br.readLine(); // Saltar encabezado
+            br.readLine();
             List<Ticket> batch = new ArrayList<>();
             while ((line = br.readLine()) != null) {
                 String[] fields = line.split(SEPARATOR);
                 Ticket ticket = ticketAdapter.createTicket(fields);
                 if (shouldAddToBatch.test(ticket)) {
                     batch.add(ticket);
-                    if (batch.size() == BATCH_SIZE) {  // Ajustar tamaño del lote según sea necesario
+                    if (batch.size() == BATCH_SIZE) {
                         ticketList.addAll(batch);
                         batch.clear();
                     }

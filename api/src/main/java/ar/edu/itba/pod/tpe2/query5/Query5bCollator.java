@@ -39,7 +39,7 @@ public class Query5bCollator implements Collator<Map.Entry<Integer, String>, Map
                     })
                     .filter(Objects::nonNull)
                     .sorted()
-                    .collect(Collectors.toList());
+                    .toList();
 
             result.computeIfAbsent(group, k -> new ArrayList<>()).addAll(descriptions);
         }

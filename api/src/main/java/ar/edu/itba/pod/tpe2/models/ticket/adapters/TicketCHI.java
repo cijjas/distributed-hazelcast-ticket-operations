@@ -1,15 +1,18 @@
 package ar.edu.itba.pod.tpe2.models.ticket.adapters;
 
+import ar.edu.itba.pod.tpe2.models.City;
+import ar.edu.itba.pod.tpe2.models.ticket.services.TicketFactory;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.DataSerializable;
+import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
-public class TicketCHI implements Ticket, DataSerializable {
+public class TicketCHI implements Ticket, IdentifiedDataSerializable {
     private LocalDate issueDate;
     private String licensePlateNumber;
     private String violationCode;
@@ -87,5 +90,15 @@ public class TicketCHI implements Ticket, DataSerializable {
         unitDescription = objectDataInput.readUTF();
         fineLevel1Amount = objectDataInput.readDouble();
         communityAreaName = objectDataInput.readUTF();
+    }
+
+    @Override
+    public int getFactoryId() {
+        return TicketFactory.FACTORY_ID;
+    }
+
+    @Override
+    public int getId() {
+        return City.CHI.ordinal();
     }
 }

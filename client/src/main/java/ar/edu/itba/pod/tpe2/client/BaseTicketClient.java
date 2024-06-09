@@ -58,7 +58,7 @@ public abstract class BaseTicketClient<T extends BaseArguments> {
 
         // Hazelcast client Config
         HazelcastInstance hazelcastInstance = HazelcastConfig.configureHazelcastClient(arguments);
-        TimestampLogger timeLog = new TimestampLogger(arguments.getOutPath(), queryConfig.getTimeOutputFile());
+        TimestampLogger timeLog = new TimestampLogger(arguments.getOutPath(), queryConfig.getTimeOutputFile(), this.getClass());
 
         try {
             IMap<Long, Ticket> ticketIMap = hazelcastInstance.getMap(getTicketMapName());

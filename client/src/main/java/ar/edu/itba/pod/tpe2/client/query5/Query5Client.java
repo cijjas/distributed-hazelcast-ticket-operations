@@ -1,5 +1,6 @@
 package ar.edu.itba.pod.tpe2.client.query5;
 
+import ar.edu.itba.pod.tpe2.client.query2.Query2Client;
 import ar.edu.itba.pod.tpe2.client.utils.QueryConfig;
 import ar.edu.itba.pod.tpe2.client.utils.parsing.BaseArguments;
 import ar.edu.itba.pod.tpe2.client.utils.HazelcastConfig;
@@ -52,7 +53,7 @@ public class Query5Client {
 
         // Hazelcast client Config
         HazelcastInstance hazelcastInstance = HazelcastConfig.configureHazelcastClient(arguments);
-        TimestampLogger timeLog = new TimestampLogger(arguments.getOutPath(), queryConfig.getTimeOutputFile());
+        TimestampLogger timeLog = new TimestampLogger(arguments.getOutPath(), queryConfig.getTimeOutputFile(), Query2Client.class.getSimpleName());
 
         try {
             timeLog.logStartReading();

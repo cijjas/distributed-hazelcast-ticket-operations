@@ -8,15 +8,17 @@ import java.time.format.DateTimeFormatter;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-
 @Slf4j
 public class TimestampLogger {
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss:SSSS");
 
     private final StringBuilder logBuilder = new StringBuilder();
     private final Path outFile;
-    public TimestampLogger(Path outPath, String queryOutFile) {
+    private final Object callingClass;
+
+    public TimestampLogger(Path outPath, String queryOutFile, Object callingClass) {
         this.outFile = outPath.resolve(queryOutFile);
+        this.callingClass  = callingClass;
     }
 
     public void logStartReading() {
@@ -42,12 +44,11 @@ public class TimestampLogger {
     private void logEvent(String message, LocalDateTime timestamp) {
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
         StackTraceElement logCaller = stackTrace[3];
-        String className = logCaller.getClassName();
         String methodName = logCaller.getMethodName();
         int lineNumber = logCaller.getLineNumber();
 
         String logMessage = String.format("%s INFO [%s] %s (%s:%d) - %s",
-                timestamp.format(formatter),Thread.currentThread().getName(), className, methodName, lineNumber, message);
+                timestamp.format(formatter), Thread.currentThread().getName(), callingClass, methodName, lineNumber, message);
 
         log.info(logMessage);
         logBuilder.append(logMessage).append("\n");
