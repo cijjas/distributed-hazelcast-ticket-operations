@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutionException;
 
 import static ar.edu.itba.pod.tpe2.client.utils.CSVUtils.parseTicketsToMap;
 
-public class Query3Client extends BaseTicketClient<Query3Arguments, String> {
+public class Query3Client extends BaseTicketClient<Query3Arguments, Map<String, String>> {
 
     public static void main(String[] args) {
         new Query3Client().run(args);
@@ -47,7 +47,7 @@ public class Query3Client extends BaseTicketClient<Query3Arguments, String> {
     }
 
     @Override
-    protected List<String> generateOutputFromResults(Map<?, String> result) {
+    protected List<String> generateOutputFromResults(Map<String, String> result) {
         return result
                 .entrySet()
                 .stream()

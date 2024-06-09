@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import static ar.edu.itba.pod.tpe2.client.utils.CSVUtils.parseInfractions;
 import static ar.edu.itba.pod.tpe2.client.utils.CSVUtils.parseTicketsToMap;
 
-public class Query5Client extends BaseTicketClient<BaseArguments, List<String>> {
+public class Query5Client extends BaseTicketClient<BaseArguments, Map<Integer, List<String>>> {
     private final Map<String, Infraction> infractions;
 
     public Query5Client() {
@@ -71,7 +71,7 @@ public class Query5Client extends BaseTicketClient<BaseArguments, List<String>> 
     }
 
     @Override
-    protected List<String> generateOutputFromResults(Map<?, List<String>> result) {
+    protected List<String> generateOutputFromResults(Map<Integer, List<String>> result) {
         return result.entrySet().stream()
                 .flatMap(entry -> entry.getValue().stream())
                 .collect(Collectors.toList());

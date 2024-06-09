@@ -24,7 +24,7 @@ import java.util.concurrent.ExecutionException;
 import static ar.edu.itba.pod.tpe2.client.utils.CSVUtils.parseInfractions;
 import static ar.edu.itba.pod.tpe2.client.utils.CSVUtils.parseTicketsToMap;
 
-public class Query2Client extends BaseTicketClient<BaseArguments, List<String>> {
+public class Query2Client extends BaseTicketClient<BaseArguments, Map<String, List<String>>> {
     private final Map<String, Infraction> infractions;
 
     public Query2Client() {
@@ -57,7 +57,7 @@ public class Query2Client extends BaseTicketClient<BaseArguments, List<String>> 
     }
 
     @Override
-    protected List<String> generateOutputFromResults(Map<?, List<String>> result) {
+    protected List<String> generateOutputFromResults(Map<String, List<String>> result) {
         return result
                 .entrySet()
                 .stream()
