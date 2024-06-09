@@ -25,7 +25,7 @@ import java.util.concurrent.ExecutionException;
 import static ar.edu.itba.pod.tpe2.client.utils.CSVUtils.*;
 
 public abstract class BaseTicketClient<T extends BaseArguments, K> {
-    private static final String CNP = "g7-"; // Cluster Name Prefix
+    protected static final String CNP = "g7-"; // Cluster Name Prefix
     protected abstract QueryConfigEnum getQueryConfig();
     protected String getTicketMapName() {
         return CNP + getQueryConfig().getQueryName() + "ticketMap";
@@ -34,9 +34,11 @@ public abstract class BaseTicketClient<T extends BaseArguments, K> {
         return CNP + getQueryConfig().getQueryName() + "jobTracker";
     }
     protected abstract void parseData(Path inPath, City city, HazelcastInstance hazelcastInstance, IMap<Long, Ticket> ticketMap) throws IOException;
-    protected abstract Map<String, K> mapReduce(Job<Long, Ticket> job) throws InterruptedException, ExecutionException;
-    protected abstract List<String> generateOutputFromResults(Map<String, K> result);
+    protected abstract Map<?, K> mapReduce(Job<Long, Ticket> job) throws InterruptedException, ExecutionException;
+    protected abstract List<String> generateOutputFromResults(Map<?, K> result);
     protected T arguments;
+    protected JobTracker jobTracker;
+    protected HazelcastInstance hazelcastInstance;
     protected void run(String[] args) {
         QueryConfigEnum query = getQueryConfig();
         QueryParser parser = QueryParserFactory.getParser(query.getQueryName());
@@ -52,7 +54,7 @@ public abstract class BaseTicketClient<T extends BaseArguments, K> {
         City city = arguments.getCity();
 
         // Hazelcast client Config
-        HazelcastInstance hazelcastInstance = HazelcastConfig.configureHazelcastClient(arguments);
+        hazelcastInstance = HazelcastConfig.configureHazelcastClient(arguments);
         TimestampLogger timeLog = new TimestampLogger(arguments.getOutPath(), queryConfig.getTimeOutputFile());
 
         try {
@@ -63,12 +65,12 @@ public abstract class BaseTicketClient<T extends BaseArguments, K> {
             parseData(arguments.getInPath(), city, hazelcastInstance, ticketIMap);
             timeLog.logEndReading();
 
-            JobTracker jobTracker = hazelcastInstance.getJobTracker(getJobTrackerName());
+            jobTracker = hazelcastInstance.getJobTracker(getJobTrackerName());
             KeyValueSource<Long, Ticket> source = KeyValueSource.fromMap(ticketIMap);
             Job<Long, Ticket> job = jobTracker.newJob(source);
 
             timeLog.logStartMapReduce();
-            Map<String, K> result = mapReduce(job);
+            Map<?, K> result = mapReduce(job);
             timeLog.logEndMapReduce();
 
             List<String> outputLines = generateOutputFromResults(result);

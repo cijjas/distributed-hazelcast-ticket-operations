@@ -29,7 +29,6 @@ public class Query4Parser extends BaseParser {
     @Override
     public void parse(CommandLine cmd) throws ParseException {
         super.parse(cmd);
-        System.out.println("Q4 is parsing!");
         parseCustomArguments(cmd);
     }
 

@@ -47,7 +47,7 @@ public class Query3Client extends BaseTicketClient<Query3Arguments, String> {
     }
 
     @Override
-    protected List<String> generateOutputFromResults(Map<String, String> result) {
+    protected List<String> generateOutputFromResults(Map<?, String> result) {
         return result
                 .entrySet()
                 .stream()
