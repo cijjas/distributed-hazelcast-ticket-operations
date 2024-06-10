@@ -45,15 +45,15 @@ public class Query4Parser extends BaseParser {
         if (dateStr == null || dateStr.isEmpty()) {
             throw new ParseException(dateType + " must not be empty");
         }
-        if (!dateStr.matches("^\\d{2}/\\d{2}/\\d{2}$")) {
-            throw new ParseException("Invalid date format for " + dateType + ". Expected format is DD/MM/YY");
+        if (!dateStr.matches("^\\d{2}/\\d{2}/\\d{4}$")) {
+            throw new ParseException("Invalid date format for " + dateType + ". Expected format is dd/MM/yyyy");
         }
 
         try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yy");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             return LocalDate.parse(dateStr, formatter);
         } catch (DateTimeParseException e) {
-            throw new ParseException("Invalid date for " + dateType + ". Expected format is DD/MM/YY");
+            throw new ParseException("Invalid date for " + dateType + ". Expected format is dd/MM/yyyy");
         }
     }
 

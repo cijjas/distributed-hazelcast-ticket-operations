@@ -41,7 +41,7 @@ public class Query2Client extends BaseTicketClient<BaseArguments, Map<String, Li
     @Override
     protected void parseData(Path inPath, City city, IMap<Long, Ticket> ticketMap) throws IOException {
         parseInfractions(inPath, city, infractions);
-        parseTicketsToMap(inPath, city, ticketMap, ticket -> hasInfraction(ticket, infractions));
+        parseTicketsToMap(inPath, city, ticketMap, ticket -> hasInfraction(ticket, infractions), 20000);
     }
 
     @Override

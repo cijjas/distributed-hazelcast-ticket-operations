@@ -6,7 +6,9 @@ import ar.edu.itba.pod.tpe2.models.ticket.adapters.TicketCHI;
 import ar.edu.itba.pod.tpe2.models.ticket.adapters.TicketNYC;
 import com.hazelcast.nio.serialization.DataSerializableFactory;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
+import lombok.Getter;
 
+@Getter
 public class TicketFactory implements DataSerializableFactory {
 
     public static final int FACTORY_ID = 1;

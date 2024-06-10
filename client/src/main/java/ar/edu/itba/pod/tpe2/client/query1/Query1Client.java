@@ -41,7 +41,31 @@ public class Query1Client extends BaseTicketClient<BaseArguments, Map<String, In
     @Override
     protected void parseData(Path inPath, City city, IMap<Long, Ticket> ticketMap) throws IOException {
         parseInfractions(inPath, city, infractions);
-        parseTicketsToMap(inPath, city, ticketMap, ticket -> hasInfraction(ticket, infractions));
+        parseTicketsToMap(inPath, city, ticketMap, ticket -> hasInfraction(ticket, infractions), 20000);
+
+        /*long start, end;
+        start = System.currentTimeMillis();
+        parseInfractions(inPath, city, infractions);
+        end = System.currentTimeMillis();
+        System.out.println("Infractions parsed in " + (end - start) + " ms");
+        int[] batchSizes = generateSequentialNumbers(20, 10000, 10);
+        for (int batchSize : batchSizes) {
+            IMap<Long, Ticket> ticketIMap = hazelcastInstance.getMap("g7-ticketMap");
+            ticketIMap.clear();
+            start = System.currentTimeMillis();
+            parseTicketsToMap(inPath, city, ticketIMap, ticket -> hasInfraction(ticket, infractions), batchSize);
+            end = System.currentTimeMillis();
+            System.out.println("Batch size: " + batchSize + " Time: " + (end - start) + " ms");
+            ticketIMap.destroy();
+        }*/
+    }
+    public static int[] generateSequentialNumbers(int size, int min, int max) {
+        int[] numbers = new int[size];
+        int increment = (max - min) / (size - 1);
+        for (int i = 0; i < size; i++) {
+            numbers[i] = min + (i * increment);
+        }
+        return numbers;
     }
 
     @Override

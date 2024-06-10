@@ -38,12 +38,11 @@ public class CSVUtils {
         }
     }
 
-    public static void parseTicketsToMap(Path filePath, City city, IMap<Long, Ticket> ticketMap, Predicate<Ticket> shouldAddToBatch) throws IOException {
+    public static void parseTicketsToMap(Path filePath, City city, IMap<Long, Ticket> ticketMap, Predicate<Ticket> shouldAddToBatch, int size) throws IOException {
         Path realPath = filePath.resolve("tickets" + city + ".csv");
         Ticket ticketAdapter = TicketAdapterFactory.getAdapter(city);
-        int batchSize = BATCH_SIZE;
         long id = 0;
-        Map<Long, Ticket> batchMap = new ConcurrentHashMap<>(batchSize);
+        Map<Long, Ticket> batchMap = new ConcurrentHashMap<>(size);
 
         CsvParserSettings settings = new CsvParserSettings();
         settings.setHeaderExtractionEnabled(true);
@@ -62,7 +61,7 @@ public class CSVUtils {
                     continue;
                 }
                 batchMap.put(id++, ticket);
-                if (batchMap.size() >= batchSize) {
+                if (batchMap.size() >= size) {
                     Map<Long, Ticket> batchToPut = new ConcurrentHashMap<>(batchMap);
                     batchMap.clear();
                     CompletableFuture.runAsync(() -> ticketMap.putAll(batchToPut), executorService);

@@ -10,5 +10,6 @@ import java.util.Collection;
 public class ServerArguments {
     private final String clusterName;
     private final String clusterPassword;
-    private final Collection<String> interfaces;
+    private final Collection<String> addresses;
+    private final int port;
 }

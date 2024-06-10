@@ -5,6 +5,7 @@ import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.DataSerializable;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
@@ -75,22 +76,20 @@ public class TicketNYC implements Ticket, DataSerializable {
         objectDataOutput.writeLong(dateEpochDay);
         objectDataOutput.writeUTF(plate);
         objectDataOutput.writeUTF(infractionCode);
-        objectDataOutput.writeUTF(issuingAgency);
         objectDataOutput.writeDouble(fineAmount);
         objectDataOutput.writeUTF(countyName);
+        objectDataOutput.writeUTF(issuingAgency);
     }
 
     @Override
     public void readData(ObjectDataInput objectDataInput) throws IOException {
         long dateEpochDay = objectDataInput.readLong();
         issueDate = LocalDate.ofEpochDay(dateEpochDay);
-
         plate = objectDataInput.readUTF();
         infractionCode = objectDataInput.readUTF();
-        issuingAgency = objectDataInput.readUTF();
         fineAmount = objectDataInput.readDouble();
         countyName = objectDataInput.readUTF();
-
+        issuingAgency = objectDataInput.readUTF();
     }
 
 

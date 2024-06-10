@@ -12,7 +12,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
-public class TicketCHI implements Ticket, IdentifiedDataSerializable {
+public class TicketCHI implements Ticket, DataSerializable {
     private LocalDate issueDate;
     private String licensePlateNumber;
     private String violationCode;
@@ -24,7 +24,6 @@ public class TicketCHI implements Ticket, IdentifiedDataSerializable {
     public Ticket createTicket(String[] fields) {
         return new TicketCHI(fields);
     }
-
 
 
     public TicketCHI(){
@@ -92,13 +91,5 @@ public class TicketCHI implements Ticket, IdentifiedDataSerializable {
         communityAreaName = objectDataInput.readUTF();
     }
 
-    @Override
-    public int getFactoryId() {
-        return TicketFactory.FACTORY_ID;
-    }
-
-    @Override
-    public int getId() {
-        return City.CHI.ordinal();
-    }
+    
 }

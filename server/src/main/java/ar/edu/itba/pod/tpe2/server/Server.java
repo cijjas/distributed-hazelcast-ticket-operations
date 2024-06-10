@@ -6,6 +6,9 @@ import com.hazelcast.config.*;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.Collections;
 
 import com.hazelcast.core.Hazelcast;
@@ -16,27 +19,30 @@ public class Server {
 
 
     public static void main(String[] args) {
-        logger.info("hz-config Server Starting ...");
 
         ServerParser parser = new ServerParser();
         ServerArguments arguments;
-
         try{
              arguments = parser.getArguments(args);
         } catch (ParseException e) {
             System.out.println(e.getMessage());
             return;
         }
+        logger.info("hz-config Server Starting ...");
 
         // Config
-        Config config = getHazelcastConfig(arguments);
 
         // Start cluster
-        Hazelcast.newHazelcastInstance(config);
+        try {
+            Config config = getHazelcastConfig(arguments);
+            Hazelcast.newHazelcastInstance(config);
+        } catch (Exception e) {
+            logger.error("Error starting cluster", e);
+        }
     }
 
 
-    private static Config getHazelcastConfig(ServerArguments arguments) {
+    private static Config getHazelcastConfig(ServerArguments arguments) throws SocketException {
         // Group Config
         Config config = new Config();
         GroupConfig groupConfig = new GroupConfig()
@@ -44,17 +50,18 @@ public class Server {
                 .setPassword(arguments.getClusterPassword());
 
         config.setGroupConfig(groupConfig);
-
         // Network Config
         MulticastConfig multicastConfig = new MulticastConfig();
 
-        JoinConfig joinConfig = new JoinConfig().setMulticastConfig(multicastConfig);
+        JoinConfig joinConfig = new JoinConfig()
+                .setMulticastConfig(multicastConfig);
 
         InterfacesConfig interfacesConfig = new InterfacesConfig()
-                .setInterfaces(arguments.getInterfaces())
+                .setInterfaces(arguments.getAddresses())
                 .setEnabled(true);
 
         NetworkConfig networkConfig = new NetworkConfig()
+                .setPort(arguments.getPort())
                 .setInterfaces(interfacesConfig)
                 .setJoin(joinConfig);
 
