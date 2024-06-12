@@ -40,6 +40,45 @@ public class TimestampLogger {
         LocalDateTime endMapReduce = LocalDateTime.now();
         logEvent("Fin del trabajo map/reduce", endMapReduce);
     }
+    public void logStartMapper() {
+        LocalDateTime startMapper = LocalDateTime.now();
+        logEvent("Inicio del mapper", startMapper);
+    }
+
+    public void logEndMapper() {
+        LocalDateTime endMapper = LocalDateTime.now();
+        logEvent("Fin del mapper", endMapper);
+    }
+
+    public void logStartCombiner() {
+        LocalDateTime startCombiner = LocalDateTime.now();
+        logEvent("Inicio del combiner", startCombiner);
+    }
+
+    public void logEndCombiner() {
+        LocalDateTime endCombiner = LocalDateTime.now();
+        logEvent("Fin del combiner", endCombiner);
+    }
+
+    public void logStartReducer() {
+        LocalDateTime startReducer = LocalDateTime.now();
+        logEvent("Inicio del reducer", startReducer);
+    }
+
+    public void logEndReducer() {
+        LocalDateTime endReducer = LocalDateTime.now();
+        logEvent("Fin del reducer", endReducer);
+    }
+
+    public void logStartCollator() {
+        LocalDateTime startCollator = LocalDateTime.now();
+        logEvent("Inicio del collator", startCollator);
+    }
+
+    public void logEndCollator() {
+        LocalDateTime endCollator = LocalDateTime.now();
+        logEvent("Fin del collator", endCollator);
+    }
 
     private void logEvent(String message, LocalDateTime timestamp) {
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();

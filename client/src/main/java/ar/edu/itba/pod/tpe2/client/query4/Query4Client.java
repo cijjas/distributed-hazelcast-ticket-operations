@@ -32,7 +32,7 @@ public class Query4Client extends BaseTicketClient<Query4Arguments, Map<String, 
 
     @Override
     protected void parseData(Path inPath, City city, IMap<Long, Ticket> ticketMap) throws IOException {
-        parseTicketsToMap(inPath, city, ticketMap, ticket -> isWithinRange(ticket.getIssueDate(), arguments), 20000);
+        parseTicketsToMap(inPath, city, ticketMap, ticket -> isWithinRange(ticket.getIssueDate(), arguments));
     }
 
     @Override

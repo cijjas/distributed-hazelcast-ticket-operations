@@ -12,10 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -24,8 +21,7 @@ public class CSVUtils {
     private static final String TICKETS = "tickets";
     private static final String CSV_FORMAT = ".csv";
     private static final String SEPARATOR = ";";
-    private static final Integer BATCH_SIZE = 20000;
-    private static final int EIGHT_KB = 8192;
+    private static final Integer BATCH_SIZE = 35000;
 
     public static void parseInfractions(Path filePath, City city, Map<String, Infraction> infractions) throws IOException {
         Path realPath = filePath.resolve(INFRACTIONS + city.name() + CSV_FORMAT);
@@ -38,19 +34,19 @@ public class CSVUtils {
         }
     }
 
-    public static void parseTicketsToMap(Path filePath, City city, IMap<Long, Ticket> ticketMap, Predicate<Ticket> shouldAddToBatch, int size) throws IOException {
+    public static void parseTicketsToMap(Path filePath, City city, IMap<Long, Ticket> ticketMap, Predicate<Ticket> shouldAddToBatch) throws IOException {
         Path realPath = filePath.resolve("tickets" + city + ".csv");
         Ticket ticketAdapter = TicketAdapterFactory.getAdapter(city);
         long id = 0;
-        Map<Long, Ticket> batchMap = new ConcurrentHashMap<>(size);
+        Map<Long, Ticket> batchMap = new ConcurrentHashMap<>(BATCH_SIZE);
 
         CsvParserSettings settings = new CsvParserSettings();
         settings.setHeaderExtractionEnabled(true);
-        settings.getFormat().setDelimiter(';');
+        settings.getFormat().setDelimiter(SEPARATOR);
 
         ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(realPath.toFile()), EIGHT_KB)) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(realPath.toFile()))) {
             CsvParser parser = new CsvParser(settings);
             parser.beginParsing(reader);
 
@@ -61,20 +57,34 @@ public class CSVUtils {
                     continue;
                 }
                 batchMap.put(id++, ticket);
-                if (batchMap.size() >= size) {
+                if (batchMap.size() >= BATCH_SIZE) {
                     Map<Long, Ticket> batchToPut = new ConcurrentHashMap<>(batchMap);
                     batchMap.clear();
-                    CompletableFuture.runAsync(() -> ticketMap.putAll(batchToPut), executorService);
+                    CompletableFuture.runAsync(() -> ticketMap.putAll(batchToPut), executorService).exceptionally(ex -> {
+                        System.err.println("Failed to put batch: " + ex.getMessage());
+                        return null;
+                    });
                 }
             }
 
             if (!batchMap.isEmpty()) {
-                CompletableFuture.runAsync(() -> ticketMap.putAll(new ConcurrentHashMap<>(batchMap)), executorService);
+                CompletableFuture.runAsync(() -> ticketMap.putAll(new ConcurrentHashMap<>(batchMap)), executorService).exceptionally(ex -> {
+                    System.err.println("Failed to put remaining batch: " + ex.getMessage());
+                    return null;
+                });
             }
         } catch (IOException e) {
             throw new RuntimeException("Error reading CSV file", e);
         } finally {
             executorService.shutdown();
+            try {
+                if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
+                    executorService.shutdownNow();
+                }
+            } catch (InterruptedException ex) {
+                executorService.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
         }
     }
 

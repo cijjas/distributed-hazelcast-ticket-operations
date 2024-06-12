@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Collections;
+import java.util.List;
 
 import com.hazelcast.core.Hazelcast;
 
@@ -22,17 +23,16 @@ public class Server {
 
         ServerParser parser = new ServerParser();
         ServerArguments arguments;
-        try{
-             arguments = parser.getArguments(args);
+
+        try {
+            arguments = parser.getArguments(args);
         } catch (ParseException e) {
             System.out.println(e.getMessage());
             return;
         }
+
         logger.info("hz-config Server Starting ...");
 
-        // Config
-
-        // Start cluster
         try {
             Config config = getHazelcastConfig(arguments);
             Hazelcast.newHazelcastInstance(config);

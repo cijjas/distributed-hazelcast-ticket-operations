@@ -32,7 +32,7 @@ public class Query3Client extends BaseTicketClient<Query3Arguments, Map<String, 
 
     @Override
     protected void parseData(Path inPath, City city, IMap<Long, Ticket> ticketMap) throws IOException {
-        parseTicketsToMap(inPath, city, ticketMap, ticket -> true, 20000);
+        parseTicketsToMap(inPath, city, ticketMap, ticket -> true);
     }
 
     @Override
