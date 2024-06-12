@@ -1,4 +1,0 @@
-2024-06-12 11:35:47 INFO  TimestampLogger:53 - 12/06/2024 11:35:47:4772 INFO [main] class ar.edu.itba.pod.tpe2.client.query5.Query5Client (run:67) - Inicio de la lectura del archivo
-2024-06-12 11:35:47 INFO  TimestampLogger:53 - 12/06/2024 11:35:47:8434 INFO [main] class ar.edu.itba.pod.tpe2.client.query5.Query5Client (run:69) - Fin de lectura del archivo
-2024-06-12 11:35:47 INFO  TimestampLogger:53 - 12/06/2024 11:35:47:8521 INFO [main] class ar.edu.itba.pod.tpe2.client.query5.Query5Client (run:75) - Inicio del trabajo map/reduce
-2024-06-12 11:35:48 INFO  TimestampLogger:53 - 12/06/2024 11:35:48:0460 INFO [main] class ar.edu.itba.pod.tpe2.client.query5.Query5Client (run:77) - Fin del trabajo map/reduce
