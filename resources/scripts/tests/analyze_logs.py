@@ -178,11 +178,11 @@ def additional_statistics(metrics_df):
     plt.show()
 
 if __name__ == "__main__":
-    log_directory_1 = "../outputs/"  # Cambia esta ruta a la ubicación de tu primer conjunto de archivos de logs
-    log_directory_2 = "../outputs2/"  # Cambia esta ruta a la ubicación de tu segundo conjunto de archivos de logs
+    log_directory_1 = "../outputs/"
+    log_directory_2 = "../outputsnot/"
 
-    metrics_df_1 = gather_metrics(log_directory_1, 'original')
-    metrics_df_2 = gather_metrics(log_directory_2, 'modified')
+    metrics_df_1 = gather_metrics(log_directory_1, 'combiner')
+    metrics_df_2 = gather_metrics(log_directory_2, 'no combiner')
 
     metrics_df = pd.concat([metrics_df_1, metrics_df_2], ignore_index=True)
 
