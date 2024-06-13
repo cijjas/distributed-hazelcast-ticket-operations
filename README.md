@@ -155,8 +155,8 @@ sh query1.sh -Daddresses='<ip1>:<port1>;<ip2>:<port2>;...' -Dcity=[NYC | CHI] -D
 | `-Dcity`        | `city`                              | Ciudad de interés                                                       | NO       | Ninguno           |
 | `-DinPath`      | `input_path`                        | Ruta al directorio de los archivos fuente                               | NO       | Ninguno     |
 | `-DoutPath`     | `output_path`                       | Ruta al direcotrio donde se generarán los archivos de resultados        | NO       | Ninguno            |
-| `-Dfrom`        | `from_date`                         | Fecha a partir de la cual es de interes analizar en formato (dd/MM/yyy) | NO       | Ninguno            |
-| `-Dto`          | `to_date`                           | Fecha hasta la cual es de interes analizar formato (dd/MM/yyy)          | NO       | Ninguno            |
+| `-Dfrom`        | `from_date`                         | Fecha a partir de la cual es de interes analizar en formato (dd/MM/yyyy) | NO       | Ninguno            |
+| `-Dto`          | `to_date`                           | Fecha hasta la cual es de interes analizar formato (dd/MM/yyyy)          | NO       | Ninguno            |
 | `-DclusterName` | `cluster_name`                      | Define el nombre del cluster al cual se desea conectar                  | SI       | `g7`              |
 | `-DclusterPass` | `cluster_password`                  | Contraseña de cluster de hazelcast seleccionado                         | SI       | `g7-pass`         |
 
