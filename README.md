@@ -63,6 +63,10 @@ sh server.sh -Dname=<cluster_name> -Dpass=<cluster_password> -Dinterfaces='<ip1>
 | `-Dinterfaces` | `'<ip1>;<ip2>;...'` | Interfaces que probará Hazelcast para conectarse       | SI       | `192.168.0.*`     |
 | `-Dport`       | `port_number`       | Puerto donde se desea correr la instancia              | SI       | `5701`            |
 
+> [!Important]
+> El archivo que crea el nodo de Hazelcast (`server.sh`) le permite 8GB de RAM, si desea cambiar esto, configure las opciones de JVM y el flag `-Xmx8g`.
+> También ser agregaron las opciones necesarias para configurar el Mancenter las cuales pueden ser comentadas y no deberían afectar el funcionamiento correcto.
+
 #### Mancenter
 Adicionalmente si se desea tener una interfaz gráfica se puede hacer uso del Hazelcast Managment Center, para esto:
 ##### Paso 1
