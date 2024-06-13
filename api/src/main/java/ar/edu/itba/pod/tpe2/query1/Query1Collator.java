@@ -25,7 +25,7 @@ public class Query1Collator implements Collator<Map.Entry<String, Integer>, Map<
         });
 
         return StreamSupport.stream(values.spliterator(), false)
-                .sorted(Comparator.comparing((Map.Entry<String, Integer> entry) -> entry.getValue()).reversed()
+                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed()
                         .thenComparing(entry -> descriptions.getOrDefault(entry.getKey(), "")))
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,

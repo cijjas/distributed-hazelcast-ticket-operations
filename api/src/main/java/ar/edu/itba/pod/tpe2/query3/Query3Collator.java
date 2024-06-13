@@ -18,7 +18,6 @@ public class Query3Collator implements Collator<Map.Entry<String, Double>, Map<S
 
     @Override
     public Map<String, String> collate(Iterable<Map.Entry<String, Double>> values) {
-        // Convert iterable to list to avoid multiple stream passes
         List<Map.Entry<String, Double>> entries = StreamSupport.stream(values.spliterator(), false)
                 .toList();
 

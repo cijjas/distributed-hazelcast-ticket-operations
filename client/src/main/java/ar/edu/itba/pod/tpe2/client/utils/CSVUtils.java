@@ -34,7 +34,7 @@ public class CSVUtils {
         }
     }
 
-    public static void parseTicketsToMap(Path filePath, City city, IMap<Long, Ticket> ticketMap, Predicate<Ticket> shouldAddToBatch) throws IOException {
+    public static void parseTicketsToMap(Path filePath, City city, IMap<Long, Ticket> ticketMap, Predicate<Ticket> shouldAddToBatch) {
         Path realPath = filePath.resolve("tickets" + city + ".csv");
         Ticket ticketAdapter = TicketAdapterFactory.getAdapter(city);
         long id = 0;
@@ -89,6 +89,9 @@ public class CSVUtils {
     }
 
 
+    /*
+    * Versión de parseo para tickets que no requiere de un IMap para almacenar los tickets.
+     */
     public static void parseTickets(Path filePath, City city, IList<Ticket> ticketList, Predicate<Ticket> shouldAddToBatch) throws IOException {
         Path realPath = filePath.resolve(TICKETS + city + CSV_FORMAT);
         Ticket ticketAdapter = TicketAdapterFactory.getAdapter(city);

@@ -1,7 +1,7 @@
 # tpe2-g7
-POD
 
 ## Descripción
+Este trabaja tiene como objetivo demostrar el funcionamiento de un sistema distribuido que permite realizar consultas sobre datos de multas de tránsito de dos ciudades (New York City y Chicago). Para ello, se implementó un sistema distribuido utilizando Hazelcast, el cual permite realizar consultas sobre los datos de multas de tránsito de ambas ciudades.
 
 ## Contenidos
 - [Instalación](#instalación)
@@ -46,25 +46,25 @@ Moverse a la carpeta de los scripts de ejecución.
 ```bash
 cd ./resources/scripts
 ```
-Aquí encontrará los scripts de ejecución para levantar un nodo en el cluster de hazelcast y los scripts para ejecutar las queries.
+Aquí se encuentran los scripts de ejecución para levantar un nodo en el cluster de hazelcast y los scripts para ejecutar las queries.
 
 ### Servidor
 
-Para lanzar una instancia de hazelcast:
+Para lanzar una instancia/nodo de hazelcast:
 ```bash
 sh server.sh -Dname=<cluster_name> -Dpass=<cluster_password> -Dinterfaces='<ip1>;<ip2>;...' -Dport=<port_number> 
 ```
 
-| Parametro      | Opciones            | Descripción                                             | Opcional | Valor por defecto |
+| Parametro      | Opciones            | Descripción                                            | Opcional | Valor por defecto |
 |----------------|---------------------|--------------------------------------------------------|----------|-------------------|
 | `-Dname`       | `cluster_name`      | Define el nombre del cluster al cual se desea conectar | SI       | `g7`              |
 | `-Dpass`       | `cluster_password`  | Contraseña de cluster de hazelcast seleccionado        | SI       | `g7-pass`         |
-| `-Dinterfaces` | `'<ip1>;<ip2>;...'` | Interfaces que probará Hazelcast                       | SI       | `192.168.0.*`     |
-| `-Dport`       | `port_number`       | Puerto donde se desa correr la instancia               | SI       | `5701`            |
+| `-Dinterfaces` | `'<ip1>;<ip2>;...'` | Interfaces que probará Hazelcast para conectarse       | SI       | `192.168.0.*`     |
+| `-Dport`       | `port_number`       | Puerto donde se desea correr la instancia              | SI       | `5701`            |
 
 ### Cliente
 
-Las diferentes queries requeiren de una fuente de información para ser procesadas (debe tener ambos archivos `ticketsX.csv` y `infractionsX.csv` donde `X` es o bien NYC o CHI). Cada query generará como resultado un archivo en formato CSV con lo obtenido por la query y otro en formato TXT con los tiempos de ejecución.
+Las diferentes queries requeiren de una fuente de información para ser procesadas (debe tener ambos archivos `ticketsX.csv` y `infractionsX.csv` donde `X` es o bien NYC o CHI). Cada query generará como resultado un archivo en formato CSV con lo obtenido por la query y otro en formato TXT con los tiempos de ejecución. Estos archivos se generan en la carpeta especificada que **debe crearse previamente (debe existir)**.
 #### Query 1: Total de Multas por Tipo de Infracción
 ```bash
 sh query1.sh -Daddresses='<ip1>:<port1>;<ip2>:<port2>;...' -Dcity=[NYC | CHI] -DinPath=<input_path> -DoutPath=<output_path>

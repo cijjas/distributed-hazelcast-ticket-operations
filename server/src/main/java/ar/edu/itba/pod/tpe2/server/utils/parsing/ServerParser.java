@@ -51,15 +51,8 @@ public class ServerParser {
     }
 
 
-    private Collection<String> validateAndGetInterfaces(String interfaceOption) throws ParseException {
+    private Collection<String> validateAndGetInterfaces(String interfaceOption)  {
         String[] interfaces = interfaceOption.split(";");
-        String pattern = "^(localhost|eth0|eth1|(\\d{1,3}|\\*)\\.(\\d{1,3}|\\*)\\.(\\d{1,3}|\\*)\\.(\\d{1,3}|\\*)(/\\d{1,2})?)$";
-
-        for (String iface : interfaces) {
-            if (!iface.matches(pattern)) {
-                throw new ParseException("Invalid interface: " + iface);
-            }
-        }
         return Arrays.asList(interfaces);
     }
 }
