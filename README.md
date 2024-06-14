@@ -9,6 +9,7 @@ Este trabaja tiene como objetivo demostrar el funcionamiento de un sistema distr
    - [Pasos](#pasos)
 - [Uso](#uso)
    - [Servidor](#servidor)
+      - [Mancenter](#mancenter)
    - [Cliente](#cliente)
       - [Query 1: Total de Multas por Tipo de Infracción](#query-1-total-de-multas-por-tipo-de-infracción)
       - [Query 2: Top 3 infracciones más populares de cada barrio](#query-2-top-3-infracciones-más-populares-de-cada-barrio)
@@ -61,6 +62,41 @@ sh server.sh -Dname=<cluster_name> -Dpass=<cluster_password> -Dinterfaces='<ip1>
 | `-Dpass`       | `cluster_password`  | Contraseña de cluster de hazelcast seleccionado        | SI       | `g7-pass`         |
 | `-Dinterfaces` | `'<ip1>;<ip2>;...'` | Interfaces que probará Hazelcast para conectarse       | SI       | `192.168.0.*`     |
 | `-Dport`       | `port_number`       | Puerto donde se desea correr la instancia              | SI       | `5701`            |
+
+> [!Important]
+> El archivo que crea el nodo de Hazelcast (`server.sh`) le permite 8GB de RAM, si desea cambiar esto, configure las opciones de JVM y el flag `-Xmx8g`.
+> También ser agregaron las opciones necesarias para configurar el Mancenter las cuales pueden ser comentadas y no deberían afectar el funcionamiento correcto.
+
+#### Mancenter
+Adicionalmente si se desea tener una interfaz gráfica se puede hacer uso del Hazelcast Managment Center, para esto:
+##### Paso 1
+
+Descargarse el [ZIP que contiene el WAR](https://docs.hazelcast.org/docs/latest/javadoc/com/hazelcast/collection/package-summary.html) de Mancenter
+
+##### Paso 2
+
+Descargar la imagen de tomcat en docker
+```bash
+docker pull tomcat:9.0.82-jre8 
+```
+##### Paso 3
+
+Correr el contenedor
+```bash
+docker run -d -p 8080:8080 --name Mytomcat tomcat:9.0.82-jre8
+```
+
+##### Paso 4
+
+Copiar el WAR descargado a webapps de tomcat en docker
+```bash
+docker cp /ruta/al/archivo.war  Mytomcat:/usr/local/tomcat/webapps/
+```
+Con esto hecho ya debería poderse ver el Mancenter en `http://localhost:8080/mancenter-3.8.5/main.html`
+
+> [!Note]
+> Para que el servidor haga uso del Mancenter se deben descomentar las líneas en el archivo `Server.java` dentro del módulo `server`
+
 
 ### Cliente
 
@@ -123,8 +159,8 @@ sh query1.sh -Daddresses='<ip1>:<port1>;<ip2>:<port2>;...' -Dcity=[NYC | CHI] -D
 | `-Dcity`        | `city`                              | Ciudad de interés                                                       | NO       | Ninguno           |
 | `-DinPath`      | `input_path`                        | Ruta al directorio de los archivos fuente                               | NO       | Ninguno     |
 | `-DoutPath`     | `output_path`                       | Ruta al direcotrio donde se generarán los archivos de resultados        | NO       | Ninguno            |
-| `-Dfrom`        | `from_date`                         | Fecha a partir de la cual es de interes analizar en formato (dd/MM/yyy) | NO       | Ninguno            |
-| `-Dto`          | `to_date`                           | Fecha hasta la cual es de interes analizar formato (dd/MM/yyy)          | NO       | Ninguno            |
+| `-Dfrom`        | `from_date`                         | Fecha a partir de la cual es de interes analizar en formato (dd/MM/yyyy) | NO       | Ninguno            |
+| `-Dto`          | `to_date`                           | Fecha hasta la cual es de interes analizar formato (dd/MM/yyyy)          | NO       | Ninguno            |
 | `-DclusterName` | `cluster_name`                      | Define el nombre del cluster al cual se desea conectar                  | SI       | `g7`              |
 | `-DclusterPass` | `cluster_password`                  | Contraseña de cluster de hazelcast seleccionado                         | SI       | `g7-pass`         |
 
