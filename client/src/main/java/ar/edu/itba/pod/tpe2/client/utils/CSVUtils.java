@@ -43,6 +43,7 @@ public class CSVUtils {
         CsvParserSettings settings = new CsvParserSettings();
         settings.setHeaderExtractionEnabled(true);
         settings.getFormat().setDelimiter(SEPARATOR);
+        settings.setLineSeparatorDetectionEnabled(true);
 
         ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
