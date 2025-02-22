@@ -1,4 +1,4 @@
-# tpe2-g7
+# Distributed Hazelcast Ticket Operations
 
 ## Descripción
 Este trabaja tiene como objetivo demostrar el funcionamiento de un sistema distribuido que permite realizar consultas sobre datos de multas de tránsito de dos ciudades (New York City y Chicago). Para ello, se implementó un sistema distribuido utilizando Hazelcast, el cual permite realizar consultas sobre los datos de multas de tránsito de ambas ciudades.
@@ -28,12 +28,12 @@ Este trabaja tiene como objetivo demostrar el funcionamiento de un sistema distr
 ### Pasos
 1. Clonar el repositorio:
    ```bash
-   git clone https://github.com/Lucaseggi/tpe2-g7.git
+   git clone hts://github.com/cijjas/distributed-hazelcast-ticket-operations.git
    ```
    
 2. Moverse al directrio del proyecto:
    ```bash
-   cd tpe2-g7
+   cd distributed-hazelcast-ticket-operations
    ```
    
 3. Compilar el proyecto:
@@ -71,7 +71,7 @@ sh server.sh -Dname=<cluster_name> -Dpass=<cluster_password> -Dinterfaces='<ip1>
 Adicionalmente si se desea tener una interfaz gráfica se puede hacer uso del Hazelcast Managment Center, para esto:
 ##### Paso 1
 
-Descargarse el [ZIP que contiene el WAR](https://docs.hazelcast.org/docs/latest/javadoc/com/hazelcast/collection/package-summary.html) de Mancenter
+Descargarse el [ZIP que contiene el WAR](hts://docs.hazelcast.org/docs/latest/javadoc/com/hazelcast/collection/package-summary.html) de Mancenter
 
 ##### Paso 2
 
@@ -183,5 +183,5 @@ sh query1.sh -Daddresses='<ip1>:<port1>;<ip2>:<port2>;...' -Dcity=[NYC | CHI] -D
 ## Integrantes del Grupo
 - [Christian Ijjas](https://github.com/cijjas) - Legajo: 63555
 - [Luca Seggiaro](https://github.com/Lucaseggi) - Legajo: 62855
-- [Manuel Dithurbide](https://github.com/manudithur) - Legajo: 62057
-- [Tobias Perry](https://github.com/TobiasPerry) - Legajo: 62064
+- [Manuel Dithurbide](hts://github.com/manudithur) - Legajo: 62057
+- [Tobias Perry](hts://github.com/TobiasPerry) - Legajo: 62064
